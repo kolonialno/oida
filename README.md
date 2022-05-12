@@ -4,5 +4,5 @@
 </h1>
 
 <p align="center">
-  Kolo … Oda's very own linter
+  <del>Kolo</del> … Oda's very own linter
 </p>
