@@ -53,25 +53,32 @@ def checker(request: pytest.FixtureRequest, reporter: TestReporter) -> Checker:
     The module is defined throught the module marker and which checker to run
     is determined by the type annotation of the test function. Eg:
 
-        @pytest.mark.module(name=..., package=..., path=..., content=...)
+        @pytest.mark.module("...", name=..., package=...)
         def test_something(checker: MyChecker) -> None:
             ...
     """
 
-    marker = request.node.get_closest_marker("module")
+    package: str | None = None
+    name: str | None = None
+    content: str | None = None
+
+    for marker in reversed(list(request.node.iter_markers("module"))):
+        if marker.args:
+            content = marker.args[0]
+        package = marker.kwargs.get("package", package)
+        name = marker.kwargs.get("name", name)
 
     assert marker, 'Missing "module" marker, required to use the "checker" fixture'
+    assert content is not None, "Missing module content"
+    assert name, "Missing name parameter to module marker"
 
-    assert "package" in marker.kwargs, "Missing package parameter to module marker"
-    assert "name" in marker.kwargs, "Missing name parameter to module marker"
-    assert "path" in marker.kwargs, "Missing path parameter to module marker"
-    assert "content" in marker.kwargs, "Missing content parameter to module marker"
+    if package:
+        path = Path("/".join(package.split("."))) / f"{name}.py"
+    else:
+        path = Path(f"{name}.py")
 
     module = Module(
-        package=marker.kwargs["package"],
-        name=marker.kwargs["name"],
-        path=Path(marker.kwargs["path"]),
-        content=textwrap.dedent(marker.kwargs["content"]),
+        package=package, name=name, path=path, content=textwrap.dedent(content)
     )
 
     # Infer the checker to use from the type hint of the fixture parameter
