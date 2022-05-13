@@ -1,11 +1,15 @@
+from .apps import AppIsolationChecker
 from .base import Checker
-from .imports import RelativeImportsChecker, ServiceAndSelectorImportsChecker
+from .imports import RelativeImportsChecker
 
-__all__ = ["RelativeImportsChecker", "ServiceAndSelectorImportsChecker"]
+__all__ = [
+    "AppIsolationChecker",
+    "RelativeImportsChecker",
+]
 
 
 def get_checkers() -> list[Checker]:
     return [
+        AppIsolationChecker(),
         RelativeImportsChecker(),
-        ServiceAndSelectorImportsChecker(),
     ]
