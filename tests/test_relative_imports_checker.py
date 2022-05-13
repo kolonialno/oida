@@ -10,9 +10,7 @@ from oida.reporter import Violation
     name="selectors",
     package="project.app",
     path="project/app/selectors.py",
-    content="""\
-        from ..other_app import something
-    """,
+    content="from ..other_app import something",
 )
 def test_invalid_relative_import(
     checker: RelativeImportsChecker, violation: Violation
@@ -29,9 +27,7 @@ def test_invalid_relative_import(
     name="selectors",
     package="project.app",
     path="project/app/selectors.py",
-    content="""\
-        from .models import something
-    """,
+    content="from .models import Model",
 )
 def test_valid_relative_import(
     checker: RelativeImportsChecker, violations: list[Violation]
