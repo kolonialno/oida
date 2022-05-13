@@ -4,8 +4,6 @@ on: push
 
 env:
   PYTHON_VERSION: "3.10"
-  POETRY_VERSION: "1.1.12"
-  POETRY_HOME: "~/.poetry"
 
 jobs:
   linters:
