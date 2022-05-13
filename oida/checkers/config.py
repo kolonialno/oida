@@ -10,6 +10,8 @@ class SubserviceConfigChecker(Checker):
     Checker that validates a sub-service config dict.
     """
 
+    name = "config"
+
     def visit_Module(self, node: ast.Module) -> dict[str, SubserviceConfig] | None:
 
         if self.module.name != "confservice":

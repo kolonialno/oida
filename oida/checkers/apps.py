@@ -22,6 +22,8 @@ class AppIsolationChecker(Checker):
             Model.objects.get()  # <-- Not allowed
     """
 
+    name = "app-isolation"
+
     def check(
         self,
         module: Module,

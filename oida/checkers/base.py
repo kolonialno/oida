@@ -1,5 +1,5 @@
 import ast
-from typing import Any
+from typing import Any, ClassVar
 
 from ..config import SubserviceConfig
 from ..module import Module
@@ -10,6 +10,7 @@ class Checker(ast.NodeVisitor):
     reporter: Reporter
     module: Module
     config: dict[str, SubserviceConfig]
+    name: ClassVar[str]
 
     def check(
         self,

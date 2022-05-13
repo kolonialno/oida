@@ -12,6 +12,8 @@ class RelativeImportsChecker(Checker):
         from ..other_app import models  # <-- Not allowed
     """
 
+    name = "relative-imports"
+
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         # Ignore absolute imports (level == 0) or modules/files that are not in
         # a package (can't use relative imports anyway)

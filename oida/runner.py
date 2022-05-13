@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 from .checkers import get_checkers
 from .config import SubserviceConfig
@@ -6,9 +7,11 @@ from .discovery import find_modules
 from .reporter import StdoutReporter
 
 
-def run(*paths: Path) -> bool:
+def run(
+    *paths: Path, output_format: Literal["default", "github"], checks: list[str]
+) -> bool:
     reporter = StdoutReporter()
-    checkers = get_checkers()
+    checkers = [checker for checker in get_checkers() if checker.name in checks]
     config: dict[str, SubserviceConfig] | None = None
     for module in find_modules(paths):
         for checker in checkers:
