@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "klint"
+name = "oida"
 version = "0.0.1"
-description = "Kolo... Oda's very own linter"
+description = "Oda's very own linter"
 authors = ["Oda <tech@oda.com>"]
 license = "MIT"
 

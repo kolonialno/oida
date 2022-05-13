@@ -1,8 +1,8 @@
 <h1 align="center">
   💅<br>
-  Klint
+  Oida
 </h1>
 
 <p align="center">
-  <del>Kolo</del> … Oda's very own linter
+  Oda's very own linter
 </p>
