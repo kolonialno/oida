@@ -13,4 +13,4 @@ runs:
         cache: 'poetry'
     - name: Install dependencies
       shell: bash
-      run: poetry install
+      run: poetry install --remove-untracked
