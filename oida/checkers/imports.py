@@ -49,17 +49,19 @@ class CheckRelativeImports(Checker):
     """
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        # Ignore absolute imports (level == 0) or modules/files that are not in
+        # a package (can't use relative imports anyway)
         if node.level == 0 or not self.module.package:
             return
 
-        path = self.module.package.split(".", 2)
-        if len(path) < 2:
+        # Ignore modules/files that are not in an app (at least two levels deep)
+        module_path = self.module.package.split(".", 2)
+        if len(module_path) < 2:
             return
 
-        root, app, *_ = path
+        project, app, *_ = module_path
         absolute_import = self.module.resolve_relative_import(node.module, node.level)
 
-        import_name = "." * node.level + (node.module if node.module else "")
-
-        if not absolute_import.startswith(f"{root}.{app}."):
+        if not absolute_import.startswith(f"{project}.{app}."):
+            import_name = "." * node.level + (node.module if node.module else "")
             self.report_violation(node, f'Relative import outside app: "{import_name}"')
