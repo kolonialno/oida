@@ -3,13 +3,13 @@ import ast
 from .base import Checker
 
 
-class CheckServiceAndSelectorImports(Checker):
+class ServiceAndSelectorImportsChecker(Checker):
     """
     Check that only public services and selectors are imported other apps
 
     Example:
-        # project/my_app/module.py
-        from project.other_app.services.private import something # <-- Not allowed
+        # project/app/module.py
+        from project.other_app.services.private import something  # <-- Not allowed
     """
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
@@ -39,13 +39,13 @@ class CheckServiceAndSelectorImports(Checker):
             )
 
 
-class CheckRelativeImports(Checker):
+class RelativeImportsChecker(Checker):
     """
     Check that no relative imports are extending beyond an app
 
     Example:
-        # project/my_app/module.py
-        from ..other_app import models # <-- Not allowed
+        # project/app/module.py
+        from ..other_app import models  # <-- Not allowed
     """
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
@@ -65,3 +65,20 @@ class CheckRelativeImports(Checker):
         if not absolute_import.startswith(f"{project}.{app}."):
             import_name = "." * node.level + (node.module if node.module else "")
             self.report_violation(node, f'Relative import outside app: "{import_name}"')
+
+
+class NonTypingImportsChecker(Checker):
+    """
+    Check that for anything imported from another app that's not a service or
+    selector it's only used for typing purposes.
+
+    Example:
+        # project/app/services.py
+        from project.other_app.models import Model
+
+        def my_function() -> None:
+            Model.objects.get()  # <-- Not allowed
+    """
+
+    def visit_Module(self, node: ast.Module) -> None:
+        print("Visiting a module")

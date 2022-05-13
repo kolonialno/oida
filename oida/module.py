@@ -4,13 +4,18 @@ from pathlib import Path
 
 
 class Module:
-    def __init__(self, package: str | None, name: str, path: Path) -> None:
+    def __init__(
+        self, package: str | None, name: str, path: Path, content: str | None = None
+    ) -> None:
         self.package = package
         self.name = name
         self.path = path
+        self.content = content
 
     @cached_property
     def ast(self) -> ast.AST:
+        if self.content is not None:
+            return ast.parse(self.content, filename=str(self.path))
         return ast.parse(self.path.read_bytes(), filename=str(self.path))
 
     def resolve_relative_import(self, name: str | None, level: int) -> str:

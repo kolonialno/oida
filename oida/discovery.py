@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Iterable
 
-from .state import Module
+from .module import Module
 
 
 def get_package(path: Path) -> str:
