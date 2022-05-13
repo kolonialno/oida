@@ -23,3 +23,6 @@ build-backend = "poetry.core.masonry.api"
 markers = [
     "module(name, package, path, content): Define the module to run the checker on",
 ]
+
+[tool.isort]
+profile = "black"

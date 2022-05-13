@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Type, get_type_hints
 
 import pytest
+
 from oida.checkers.base import Checker
 from oida.module import Module
 from oida.reporter import Violation
