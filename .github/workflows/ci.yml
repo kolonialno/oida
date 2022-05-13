@@ -23,7 +23,7 @@ jobs:
       - name: Add problem matcher
         run: echo "::add-matcher::.github/${{ matrix.linter }}-problem-matcher.json"
       - name: Run ${{ matrix.linter }}
-        run: make ${{ matrix.linter }}
+        run: poetry run make ${{ matrix.linter }}
   pytest:
     runs-on: ubuntu-latest
     steps:
@@ -34,4 +34,4 @@ jobs:
       - name: Setup project
         uses: ./.github/actions/setup-project
       - name: Run pytest
-        run: pytest -v
+        run: poetry run pytest -v

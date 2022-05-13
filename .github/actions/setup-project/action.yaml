@@ -16,7 +16,4 @@ runs:
       run: echo "$POETRY_HOME/bin" >> $GITHUB_PATH
     - name: Install dependencies
       shell: bash
-      run: |
-        poetry install
-        echo "$(poetry env info -p)/bin" >> $GITHUB_PATH
-        echo "VIRTUAL_ENV=$(poetry env info -p)" >> $GITHUB_ENV
+      run: poetry install
