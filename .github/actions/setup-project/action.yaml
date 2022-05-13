@@ -11,9 +11,6 @@ runs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'poetry'
-    - name: "Add Poetry to PATH"
-      shell: bash
-      run: echo "$POETRY_HOME/bin" >> $GITHUB_PATH
     - name: Install dependencies
       shell: bash
       run: poetry install
