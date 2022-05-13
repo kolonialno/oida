@@ -24,8 +24,10 @@ class RelativeImportsChecker(Checker):
             return
 
         project, app, *_ = module_path
-        absolute_import = self.module.resolve_relative_import(node.module, node.level)
+        absolute_import = self.module.resolve_relative_import(
+            node.module, node.level
+        ).split(".")
 
-        if not absolute_import.startswith(f"{project}.{app}."):
+        if absolute_import[:2] != [project, app]:
             import_name = "." * node.level + (node.module if node.module else "")
             self.report_violation(node, f'Relative import outside app: "{import_name}"')

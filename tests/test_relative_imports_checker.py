@@ -54,3 +54,19 @@ def test_valid_relative_import_inline(
     checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
     assert violations == []
+
+
+@pytest.mark.module("from . import models")
+def test_valid_relative_module_import(
+    checker: RelativeImportsChecker, violations: list[Violation]
+) -> None:
+    assert violations == []
+
+
+@pytest.mark.module("from .. import models")
+def test_invalid_relative_module_import(
+    checker: RelativeImportsChecker, violation: Violation
+) -> None:
+    assert violation == Violation(
+        file=mock.ANY, line=1, column=0, message='Relative import outside app: ".."'
+    )
