@@ -19,7 +19,7 @@ our Django projects.
 
 Oida expects the code to be structured with a project as the top package and
 then apps as submodules below this. Sub-services are a group of apps that are
-freely allowed to import from each other.Sub-services are defined in a
+freely allowed to import from each other. Sub-services are defined in a
 `confservices.py` file.
 
 Here's an example project structure:
@@ -33,7 +33,22 @@ Here's an example project structure:
         second_app/
             __init__.py
             ....
+        third_app/
+            __init__.py
+            ...
         ...
+
+and here's an example sub-services config:
+
+    SUBSERVICES = {
+        "first_and_second": {
+            "apps": ["project.first_app", "project.second_app"],
+        }
+        "third": {
+            "apps": ["project.third_app"],
+            "database": "other_db",  # This sub-service has it's own database
+        }
+    }
 
 
 ## Checks
