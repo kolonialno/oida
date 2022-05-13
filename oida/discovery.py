@@ -18,27 +18,40 @@ def get_package(path: Path) -> str:
     return ".".join(names)
 
 
+def sort_paths(paths: Iterable[Path]) -> list[Path]:
+    sorted_paths: list[Path] = []
+
+    for path in paths:
+        if path.stem.startswith("."):
+            continue
+
+        if not path.is_dir() and path.name == "confservice.py":
+            sorted_paths.insert(0, path)
+        elif path.is_dir():
+            sorted_paths.append(path)
+        elif path.suffix in (".py", ".pyi"):
+            sorted_paths.insert(1, path)
+
+    return sorted_paths
+
+
 def check_directory(path: Path, package: str | None = None) -> Iterable[Module]:
     """
     Given a path to a directory, find and load all modules in that directory.
     """
 
     if not (path / "__init__.py").exists():
-        for child in path.iterdir():
-            if child.stem.startswith("."):
-                continue
+        for child in sort_paths(path.iterdir()):
             if child.is_dir():
                 yield from check_directory(child)
-            elif child.suffix in (".py", ".pyi"):
+            else:
                 yield Module(package=None, name=child.stem, path=child)
     else:
         package = f"{package}.{path.stem}" if package else get_package(path)
-        for child in path.iterdir():
-            if child.stem.startswith("."):
-                continue
+        for child in sort_paths(path.iterdir()):
             if child.is_dir():
                 yield from check_directory(child, package)
-            elif child.suffix in (".py", ".pyi"):
+            else:
                 yield check_file(child, package)
 
 

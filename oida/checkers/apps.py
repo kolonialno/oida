@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from functools import reduce
 from typing import Iterator
 
+from ..config import SubserviceConfig
 from ..module import Module
 from ..reporter import Reporter
 from .base import Checker
@@ -21,28 +22,44 @@ class AppIsolationChecker(Checker):
             Model.objects.get()  # <-- Not allowed
     """
 
-    def check(self, module: Module, reporter: Reporter) -> None:
-        self.scopes: list[set[str]] = [set()]
+    def check(
+        self,
+        module: Module,
+        reporter: Reporter,
+        config: dict[str, SubserviceConfig] | None,
+    ) -> None:
+        self.scopes: list[dict[str, str]] = [{}]
         try:
-            super().check(module, reporter)
+            super().check(module, reporter, config)
         finally:
             self.scopes = []
 
     @property
-    def current_scope(self) -> set[str]:
+    def current_scope(self) -> dict[str, str]:
         return self.scopes[-1]
 
     @property
-    def in_scope(self) -> set[str]:
-        return reduce(set.__or__, self.scopes)
+    def in_scope(self) -> dict[str, str]:
+        return reduce(dict.__or__, self.scopes)
 
     @contextmanager
     def push_scope(self) -> Iterator[None]:
-        self.scopes.append(set())
+        self.scopes.append({})
         try:
             yield
         finally:
             self.scopes.pop()
+
+    def is_same_subservice(self, app_a: str, app_b: str) -> bool:
+        if app_a == app_b:
+            return True
+
+        for config in self.config.values():
+            apps = config.get("apps", [])
+            if app_a in apps and app_b in apps:
+                return True
+
+        return False
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level > 0 or not self.module.package or not node.module:
@@ -55,8 +72,11 @@ class AppIsolationChecker(Checker):
         if components[0] != module[0]:
             return
 
-        # Ignore imports within the same app
-        if components[:2] == module[:2]:
+        module_app = ".".join(module[:2])
+        import_app = ".".join(components[:2])
+
+        # Ignore imports within the same sub-service
+        if self.is_same_subservice(module_app, import_app):
             return
 
         plural = "s" if len(node.names) > 1 else ""
@@ -71,7 +91,9 @@ class AppIsolationChecker(Checker):
             )
         elif components[-1] not in ("services", "selectors"):
             for name in node.names:
-                self.current_scope.add(name.asname if name.asname else name.name)
+                self.current_scope[
+                    name.asname if name.asname else name.name
+                ] = f"{node.module}.{name.name}"
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         with self.push_scope():
@@ -84,5 +106,8 @@ class AppIsolationChecker(Checker):
         """Implemented to avoid visit_Name being called for annotations"""
 
     def visit_Name(self, node: ast.Name) -> None:
-        if node.id in self.in_scope:
-            self.report_violation(node, f"Private variable {node.id} referenced")
+        scope = self.in_scope
+        if node.id in scope:
+            self.report_violation(
+                node, f'Private variable "{scope[node.id]}" referenced'
+            )

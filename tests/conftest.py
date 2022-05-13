@@ -81,6 +81,9 @@ def checker(request: pytest.FixtureRequest, reporter: TestReporter) -> Checker:
         package=package, name=name, path=path, content=textwrap.dedent(content)
     )
 
+    confservice_marker = request.node.get_closest_marker("confservice")
+    config = confservice_marker.kwargs if confservice_marker else {}
+
     # Infer the checker to use from the type hint of the fixture parameter
     type_hints = get_type_hints(request.function)
     assert "checker" in type_hints, "Missing type annotation for checker parameter"
@@ -90,5 +93,5 @@ def checker(request: pytest.FixtureRequest, reporter: TestReporter) -> Checker:
     ), f'"{checker_cls.__name__}" is not a subclass of Checker'
 
     checker = checker_cls()
-    checker.check(module, reporter)
+    checker.check(module, reporter, config)
     return checker
