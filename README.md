@@ -4,11 +4,9 @@
 </h1>
 
 <p align="center">
-  Oda's very own linter
+  Oida is Oda's internal linter that enforces code style and modularization in
+  our Django projects.
 </p>
-
-Oida is Oda's internal linter that enforces code style and modularization in
-our Django projects.
 
 ## Usage
 
