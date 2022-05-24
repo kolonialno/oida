@@ -4,7 +4,7 @@ from typing import Iterable
 from .module import Module
 
 
-def get_package(path: Path) -> str:
+def get_module(path: Path) -> str:
     """
     Given a path to a python module (directory or file), find it's absolute
     module name.
@@ -35,7 +35,7 @@ def sort_paths(paths: Iterable[Path]) -> list[Path]:
     return sorted_paths
 
 
-def check_directory(path: Path, package: str | None = None) -> Iterable[Module]:
+def check_directory(path: Path, module: str | None = None) -> Iterable[Module]:
     """
     Given a path to a directory, find and load all modules in that directory.
     """
@@ -45,23 +45,23 @@ def check_directory(path: Path, package: str | None = None) -> Iterable[Module]:
             if child.is_dir():
                 yield from check_directory(child)
             else:
-                yield Module(package=None, name=child.stem, path=child)
+                yield Module(module=None, name=child.stem, path=child)
     else:
-        package = f"{package}.{path.stem}" if package else get_package(path)
+        module = f"{module}.{path.stem}" if module else get_module(path)
         for child in sort_paths(path.iterdir()):
             if child.is_dir():
-                yield from check_directory(child, package)
+                yield from check_directory(child, module)
             else:
-                yield check_file(child, package)
+                yield check_file(child, module)
 
 
-def check_file(path: Path, package: str | None = None) -> Module:
+def check_file(path: Path, module: str | None = None) -> Module:
 
-    if package is None:
-        package = get_package(path)
+    if module is None:
+        module = get_module(path)
 
     return Module(
-        package=package, name="" if path.stem == "__init__" else path.stem, path=path
+        module=module, name="" if path.stem == "__init__" else path.stem, path=path
     )
 
 

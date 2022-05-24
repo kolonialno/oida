@@ -1,11 +1,9 @@
-from unittest import mock
-
 import pytest
 
 from oida.checkers import RelativeImportsChecker
-from oida.reporter import Violation
+from oida.checkers.base import Violation
 
-pytestmark = pytest.mark.module(name="selectors", package="project.app")
+pytestmark = pytest.mark.module(name="selectors", module="project.app")
 
 
 @pytest.mark.module("from ..other_app import something")
@@ -13,10 +11,9 @@ def test_invalid_relative_import(
     checker: RelativeImportsChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
-        file=mock.ANY,
         line=1,
         column=0,
-        message='Relative import outside app: "..other_app"',
+        message='ODA001: Relative import outside app: "..other_app"',
     )
 
 
@@ -30,10 +27,9 @@ def test_invalid_relative_import_inline(
     checker: RelativeImportsChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
-        file=mock.ANY,
         line=2,
         column=4,
-        message='Relative import outside app: "..other_app"',
+        message='ODA001: Relative import outside app: "..other_app"',
     )
 
 
@@ -68,5 +64,5 @@ def test_invalid_relative_module_import(
     checker: RelativeImportsChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
-        file=mock.ANY, line=1, column=0, message='Relative import outside app: ".."'
+        line=1, column=0, message='ODA001: Relative import outside app: ".."'
     )

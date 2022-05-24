@@ -1,33 +1,40 @@
 import ast
-from typing import Any, ClassVar
+from typing import ClassVar, NamedTuple
 
-from ..config import SubserviceConfig
-from ..module import Module
-from ..reporter import Reporter
+
+class Violation(NamedTuple):
+    line: int
+    column: int
+    message: str
 
 
 class Checker(ast.NodeVisitor):
-    reporter: Reporter
-    module: Module
-    config: dict[str, SubserviceConfig]
-    name: ClassVar[str]
+    slug: ClassVar[str]
 
-    def check(
-        self,
-        module: Module,
-        reporter: Reporter,
-        config: dict[str, SubserviceConfig] | None,
-    ) -> Any:
-        self.reporter = reporter
+    def __init__(self, module: str | None, name: str) -> None:
         self.module = module
-        self.config = config if config is not None else {}
-
-        return self.visit(module.ast)
+        self.name = name
+        self.violations: list[Violation] = []
 
     def report_violation(self, node: ast.AST, message: str) -> None:
-        self.reporter.report_violation(
-            file=self.module.path,
-            line=node.lineno,
-            column=node.col_offset,
-            message=message,
+        self.violations.append(
+            Violation(
+                line=node.lineno,
+                column=node.col_offset,
+                message=message,
+            )
         )
+
+    def resolve_relative_import(self, name: str | None, level: int) -> str:
+        """Resolve a relative module name to an absolute one."""
+
+        # TODO: We can't crash on invalid code
+
+        if not self.module:
+            raise ImportError("attempted relative import beyond top-level package")
+
+        bits = self.module.rsplit(".", level - 1)
+        if len(bits) < level:
+            raise ImportError("attempted relative import beyond top-level package")
+        base = bits[0]
+        return "{}.{}".format(base, name) if name else base

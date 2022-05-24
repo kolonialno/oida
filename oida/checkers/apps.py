@@ -3,9 +3,6 @@ from contextlib import contextmanager
 from functools import reduce
 from typing import Iterator
 
-from ..config import SubserviceConfig
-from ..module import Module
-from ..reporter import Reporter
 from .base import Checker
 
 
@@ -22,19 +19,11 @@ class AppIsolationChecker(Checker):
             Model.objects.get()  # <-- Not allowed
     """
 
-    name = "app-isolation"
+    slug = "app-isolation"
 
-    def check(
-        self,
-        module: Module,
-        reporter: Reporter,
-        config: dict[str, SubserviceConfig] | None,
-    ) -> None:
+    def __init__(self, module: str, name: str) -> None:
+        super().__init__(module, name)
         self.scopes: list[dict[str, str]] = [{}]
-        try:
-            super().check(module, reporter, config)
-        finally:
-            self.scopes = []
 
     @property
     def current_scope(self) -> dict[str, str]:
@@ -52,22 +41,17 @@ class AppIsolationChecker(Checker):
         finally:
             self.scopes.pop()
 
-    def is_same_subservice(self, app_a: str, app_b: str) -> bool:
+    def is_same_app(self, app_a: str, app_b: str) -> bool:
         if app_a == app_b:
             return True
-
-        for config in self.config.values():
-            apps = config.get("apps", [])
-            if app_a in apps and app_b in apps:
-                return True
 
         return False
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        if node.level > 0 or not self.module.package or not node.module:
+        if node.level > 0 or not self.module or not node.module:
             return
 
-        module = self.module.package.split(".")
+        module = self.module.split(".")
         components = node.module.split(".")
 
         # Ignore imports from third party libraries
@@ -78,7 +62,7 @@ class AppIsolationChecker(Checker):
         import_app = ".".join(components[:2])
 
         # Ignore imports within the same sub-service
-        if self.is_same_subservice(module_app, import_app):
+        if self.is_same_app(module_app, import_app):
             return
 
         plural = "s" if len(node.names) > 1 else ""
@@ -104,8 +88,12 @@ class AppIsolationChecker(Checker):
     def visit_arg(self, node: ast.arg) -> None:
         """Implemented to avoid visit_Name being called for annotations"""
 
+        # TODO: Need to check the value bit
+
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
         """Implemented to avoid visit_Name being called for annotations"""
+
+        # TODO: Need to check the non-name side of things
 
     def visit_Name(self, node: ast.Name) -> None:
         scope = self.in_scope

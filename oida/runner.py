@@ -1,24 +1,25 @@
 from pathlib import Path
-from typing import Literal
 
 from .checkers import get_checkers
-from .config import SubserviceConfig
 from .discovery import find_modules
-from .reporter import StdoutReporter
 
 
-def run(
-    *paths: Path, output_format: Literal["default", "github"], checks: list[str]
-) -> bool:
-    reporter = StdoutReporter()
-    checkers = [checker for checker in get_checkers() if checker.name in checks]
-    config: dict[str, SubserviceConfig] | None = None
+def print_violation(file: Path, line: int, column: int, message: str) -> None:
+    print(f"{file}:{line}:{column}: {message}")
+
+
+def run(*paths: Path, checks: list[str]) -> bool:
+    has_violations = False
+    checkers = get_checkers(checks)
     for module in find_modules(paths):
-        for checker in checkers:
-            if result := checker.check(module, reporter, config):
-                config = result
+        for checker_cls in checkers:
+            checker = checker_cls(module=module.module, name=module.name)
+            checker.visit(module.ast)
+            if checker.violations:
+                has_violations = True
+            for violation in checker.violations:
+                print_violation(module.path, *violation)
         # Clear ast from memory as we no longer need it
         del module.ast
 
-    reporter.print_summary()
-    return reporter.has_violations
+    return has_violations

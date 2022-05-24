@@ -18,6 +18,9 @@ pytest = "^7.1.2"
 [tool.poetry.scripts]
 oida = 'oida.console:main'
 
+[tool.poetry.plugins."flake8.extension"]
+ODA = "oida.flake8:Plugin"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
