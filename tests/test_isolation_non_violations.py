@@ -182,3 +182,39 @@ def test_isloation_project_component_service(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
+
+
+@pytest.mark.module(
+    """\
+    from third_party.other.app.services import service
+    service()
+    """
+)
+def test_isloation_third_pary_deep_import_from(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.module(
+    """\
+    from third_party import service
+    service()
+    """
+)
+def test_isloation_third_party_simple_import_from(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.module(
+    """\
+    import third_party
+    third_pary.foo.bar.baz.service()
+    """
+)
+def test_isloation_third_party_simple_import(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations

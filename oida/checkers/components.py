@@ -103,12 +103,19 @@ class ComponentIsolationChecker(Checker):
         # TODO: Check for too deep imports right off the bat, as they might not be accessed
 
     def visit_Import(self, node: ast.Import) -> Any:
+
+        root_module_name, *_ = self.module.split(".", 2)
+
         for name in node.names:
+            # Ignore third party imports
+            top_name, *_ = name.name.split(".", 1)
+            if top_name != root_module_name:
+                continue
+
             if name.asname:
                 self.current_scope[name.asname] = name.name
             else:
                 # `import foo.bar` only sets foo in the local scope
-                top_name, *_ = name.name.split(".", 1)
                 self.current_scope[top_name] = top_name
 
         # TODO: Check for too deep imports right off the bat, as they might not be accessed
