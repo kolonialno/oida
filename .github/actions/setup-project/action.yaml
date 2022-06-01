@@ -11,6 +11,9 @@ runs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'poetry'
+    - name: Create venv
+      shell: bash
+      run: python -m venv .venv
     - name: Install dependencies
       shell: bash
       run: poetry install --remove-untracked
