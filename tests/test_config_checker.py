@@ -75,7 +75,7 @@ def test_config_unknown_constant_with_annotation(
 
 
 @pytest.mark.module("ALLOWED_FOREIGN_KEYS = ('foo', 'bar')")
-def test_config_unknown_constant_with_annotation(
+def test_config_allowed_foreign_keys(
     checker: CheckConfig, violations: list[Violation]
 ) -> None:
     assert not violations
