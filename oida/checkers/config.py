@@ -16,6 +16,10 @@ class CheckConfig(Checker):
         super().__init__(module, name)
         self.config = Config()
 
+    #####################
+    # Ast node visiting #
+    #####################
+
     def visit_Module(self, node: ast.Module) -> None:
 
         # This checker only looks at confcomponent.py files
@@ -36,7 +40,9 @@ class CheckConfig(Checker):
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
         target = node.target
         if not isinstance(target, ast.Name):
-            return self.report_violation(node, "Unknown expression in component config")
+            return self.report_violation(
+                node, "Unsupported assignment in component config"
+            )
 
         return self.check_assign(target.id, node)
 
@@ -45,22 +51,26 @@ class CheckConfig(Checker):
             case ast.Assign(targets=[ast.Name() as target]):
                 self.check_assign(target.id, node)
             case _:
-                self.report_violation(node, "Unknown expression in component config")
+                self.report_violation(
+                    node, "Unsupported assignment in component config"
+                )
+
+    #####################
+    # Check assignments #
+    #####################
 
     def check_assign(self, name: str, node: ast.AnnAssign | ast.Assign) -> None:
 
         if name == "ALLOWED_IMPORTS":
-            return self.check_allowed_imports(node)
-
-        self.report_violation(
-            node, f'Unknown constant "{name}" assigned in component config'
-        )
+            self.check_allowed_imports(node)
+        elif name == "ALLOWED_FOREIGN_KEYS":
+            self.check_allowed_foreign_keys(node)
+        else:
+            self.report_violation(
+                node, f'Unknown constant "{name}" assigned in component config'
+            )
 
     def check_allowed_imports(self, node: ast.AnnAssign | ast.Assign) -> None:
-        """
-        Check thhe
-        """
-
         # Silently ignore type-only assignments: ALLOWED_IMPORTS: tuple[str, ...]
         if node.value is None:
             return
@@ -80,5 +90,28 @@ class CheckConfig(Checker):
             )
 
         self.config.allowed_imports = tuple(
+            cast(ast.Constant, item).value for item in node.value.elts
+        )
+
+    def check_allowed_foreign_keys(self, node: ast.AnnAssign | ast.Assign) -> None:
+        # Silently ignore type-only assignments: ALLOWED_FOREIGN_KEYS: tuple[str, ...]
+        if node.value is None:
+            return
+
+        if not isinstance(node.value, ast.Tuple):
+            return self.report_violation(
+                node.value,
+                "ALLOWED_FOREIGN_KEYS should be a tuple of string literals",
+            )
+
+        if not all(
+            isinstance(item, ast.Constant) and isinstance(item.value, str)
+            for item in node.value.elts
+        ):
+            return self.report_violation(
+                node.value, "ALLOWED_FOREIGN_KEYS should be a tuple of string literals"
+            )
+
+        self.config.allowed_foreign_keys = tuple(
             cast(ast.Constant, item).value for item in node.value.elts
         )
