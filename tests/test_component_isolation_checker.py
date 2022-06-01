@@ -1,6 +1,6 @@
 import pytest
 
-from oida.checkers import AppIsolationChecker
+from oida.checkers import ComponentIsolationChecker
 from oida.checkers.base import Violation
 
 pytestmark = pytest.mark.module(name="selectors", module="project.component.app")
@@ -13,7 +13,7 @@ pytestmark = pytest.mark.module(name="selectors", module="project.component.app"
     """
 )
 def test_app_isolation_private_service_import(
-    checker: AppIsolationChecker, violation: Violation
+    checker: ComponentIsolationChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
         line=2,
@@ -29,7 +29,7 @@ def test_app_isolation_private_service_import(
     """
 )
 def test_app_isolation_public_service_import(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert violations == []
 
@@ -41,7 +41,7 @@ def test_app_isolation_public_service_import(
     """
 )
 def test_app_isolation_private_selector_import(
-    checker: AppIsolationChecker, violation: Violation
+    checker: ComponentIsolationChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
         line=2,
@@ -52,7 +52,7 @@ def test_app_isolation_private_selector_import(
 
 @pytest.mark.module("from project.other.selectors import selector")
 def test_app_isolation_public_selector_import(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert violations == []
 
@@ -66,7 +66,7 @@ def test_app_isolation_public_selector_import(
     """
 )
 def test_app_isolation_reference_violation(
-    checker: AppIsolationChecker, violation: Violation
+    checker: ComponentIsolationChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
         line=4,
@@ -84,7 +84,7 @@ def test_app_isolation_reference_violation(
     """
 )
 def test_app_isolation_internal_app_reference(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
 
@@ -98,7 +98,7 @@ def test_app_isolation_internal_app_reference(
     """
 )
 def test_app_isolation_top_level_import(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
 
@@ -111,7 +111,7 @@ def test_app_isolation_top_level_import(
     """
 )
 def test_app_isolation_reference_violation_non_top_level_import(
-    checker: AppIsolationChecker, violation: Violation
+    checker: ComponentIsolationChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
         line=3,
@@ -128,7 +128,7 @@ def test_app_isolation_reference_violation_non_top_level_import(
     """
 )
 def test_app_isolation_parameter_annotation(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
 
@@ -140,7 +140,7 @@ def test_app_isolation_parameter_annotation(
     """
 )
 def test_app_isolation_variable_annotation(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
 
@@ -152,7 +152,7 @@ def test_app_isolation_variable_annotation(
     """
 )
 def test_app_isolation_assign_annotation(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
 
@@ -165,7 +165,7 @@ def test_app_isolation_assign_annotation(
     """
 )
 def test_app_isolation_allowed_import(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
 
@@ -178,6 +178,6 @@ def test_app_isolation_allowed_import(
     """
 )
 def test_app_isolation_allowed_import_star(
-    checker: AppIsolationChecker, violations: list[Violation]
+    checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations

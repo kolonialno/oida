@@ -5,7 +5,7 @@ from ..config import Config
 from .base import Checker
 
 
-class CheckConfig(Checker):
+class ConfigChecker(Checker):
     """
     This checker reports violations in the confcomponent.py files.
     """

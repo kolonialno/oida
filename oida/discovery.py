@@ -3,7 +3,7 @@ import functools
 from pathlib import Path
 from typing import Iterable
 
-from oida.checkers.config import CheckConfig
+from oida.checkers import ConfigChecker
 from oida.config import Config
 
 from .module import Module
@@ -47,7 +47,7 @@ def load_config(path: Path) -> Config:
     module = get_module(path.parent)
     name = path.stem
 
-    checker = CheckConfig(module=module, name=name, component_config=None)
+    checker = ConfigChecker(module=module, name=name, component_config=None)
     with open(path) as f:
         checker.visit(ast.parse(f.read(), str(path)))
     return checker.parsed_config

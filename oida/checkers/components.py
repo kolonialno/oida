@@ -7,7 +7,7 @@ from ..config import Config
 from .base import Checker
 
 
-class AppIsolationChecker(Checker):
+class ComponentIsolationChecker(Checker):
     """
     Check that for anything imported from another app that's not a service or
     selector it's only used for typing purposes.
@@ -20,7 +20,7 @@ class AppIsolationChecker(Checker):
             Model.objects.get()  # <-- Not allowed
     """
 
-    slug = "app-isolation"
+    slug = "component-isolation"
 
     def __init__(self, module: str, name: str, component_config: Config | None) -> None:
         super().__init__(module, name, component_config)

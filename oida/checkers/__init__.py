@@ -1,16 +1,19 @@
 from typing import Sequence
 
-from .apps import AppIsolationChecker
 from .base import Checker
+from .components import ComponentIsolationChecker
+from .config import ConfigChecker
 from .imports import RelativeImportsChecker
 
 __all__ = [
-    "AppIsolationChecker",
+    "ComponentIsolationChecker",
+    "ConfigChecker",
     "RelativeImportsChecker",
 ]
 
 ALL_CHECKERS = (
-    AppIsolationChecker,
+    ComponentIsolationChecker,
+    ConfigChecker,
     RelativeImportsChecker,
 )
 
