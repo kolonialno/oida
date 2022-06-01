@@ -12,9 +12,9 @@ class CheckConfig(Checker):
 
     slug = "config"
 
-    def __init__(self, module: str, name: str) -> None:
-        super().__init__(module, name)
-        self.config = Config()
+    def __init__(self, module: str, name: str, component_config: Config | None) -> None:
+        super().__init__(module, name, component_config)
+        self.parsed_config = Config()
 
     #####################
     # Ast node visiting #
@@ -89,7 +89,7 @@ class CheckConfig(Checker):
                 node.value, "ALLOWED_IMPORTS should be a tuple of string literals"
             )
 
-        self.config.allowed_imports = tuple(
+        self.parsed_config.allowed_imports = tuple(
             cast(ast.Constant, item).value for item in node.value.elts
         )
 
@@ -112,6 +112,6 @@ class CheckConfig(Checker):
                 node.value, "ALLOWED_FOREIGN_KEYS should be a tuple of string literals"
             )
 
-        self.config.allowed_foreign_keys = tuple(
+        self.parsed_config.allowed_foreign_keys = tuple(
             cast(ast.Constant, item).value for item in node.value.elts
         )

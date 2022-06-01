@@ -3,35 +3,50 @@ import pytest
 from oida.checkers import AppIsolationChecker
 from oida.checkers.base import Violation
 
-pytestmark = pytest.mark.module(name="selectors", module="project.app")
+pytestmark = pytest.mark.module(name="selectors", module="project.component.app")
 
 
-@pytest.mark.module("from project.other.services.private import service")
+@pytest.mark.module(
+    """\
+    from project.other.app.services import service
+    service()
+    """
+)
 def test_app_isolation_private_service_import(
     checker: AppIsolationChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
-        line=1,
+        line=2,
         column=0,
-        message='Non-public service imported from "project.other.services.private"',
+        message='Private attribute "project.other.app.services.service" referenced',
     )
 
 
-@pytest.mark.module("from project.other.services import service")
+@pytest.mark.module(
+    """\
+    from project.other.services import service
+    service()
+    """
+)
 def test_app_isolation_public_service_import(
     checker: AppIsolationChecker, violations: list[Violation]
 ) -> None:
     assert violations == []
 
 
-@pytest.mark.module("from project.other.selectors.private import selector")
+@pytest.mark.module(
+    """\
+    from project.other.app.selectors import selector
+    selector()
+    """
+)
 def test_app_isolation_private_selector_import(
     checker: AppIsolationChecker, violation: Violation
 ) -> None:
     assert violation == Violation(
-        line=1,
+        line=2,
         column=0,
-        message='Non-public selector imported from "project.other.selectors.private"',
+        message='Private attribute "project.other.app.selectors.selector" referenced',
     )
 
 
@@ -44,7 +59,7 @@ def test_app_isolation_public_selector_import(
 
 @pytest.mark.module(
     """\
-    from project.other.models import Model
+    from project.other.app.models import Model
 
     def selector() -> None:
         Model.objects.get()
@@ -56,13 +71,13 @@ def test_app_isolation_reference_violation(
     assert violation == Violation(
         line=4,
         column=4,
-        message='Private variable "project.other.models.Model" referenced',
+        message='Private attribute "project.other.app.models.Model" referenced',
     )
 
 
 @pytest.mark.module(
     """\
-    from project.app.models import Model
+    from project.component.app.models import Model
 
     def selector() -> None:
         Model.objects.get()
@@ -82,21 +97,7 @@ def test_app_isolation_internal_app_reference(
         other_service()
     """
 )
-def test_app_isolation_service_import(
-    checker: AppIsolationChecker, violations: list[Violation]
-) -> None:
-    assert not violations
-
-
-@pytest.mark.module(
-    """\
-    from project.other.selectors import other_selector
-
-    def selector() -> None:
-        other_selector()
-    """
-)
-def test_app_isolation_selector_import(
+def test_app_isolation_top_level_import(
     checker: AppIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
@@ -105,7 +106,7 @@ def test_app_isolation_selector_import(
 @pytest.mark.module(
     """\
     def selector() -> None:
-        from project.other.models import Model
+        from project.other.app.models import Model
         Model.objects.get()
     """
 )
@@ -115,13 +116,13 @@ def test_app_isolation_reference_violation_non_top_level_import(
     assert violation == Violation(
         line=3,
         column=4,
-        message='Private variable "project.other.models.Model" referenced',
+        message='Private attribute "project.other.app.models.Model" referenced',
     )
 
 
 @pytest.mark.module(
     """\
-    from project.other.models import Model
+    from project.other.app.models import Model
 
     def selector(model: Model) -> None: ...
     """
@@ -134,7 +135,7 @@ def test_app_isolation_parameter_annotation(
 
 @pytest.mark.module(
     """\
-    from project.other.models import Model
+    from project.other.app.models import Model
     variable: Model
     """
 )
@@ -146,11 +147,37 @@ def test_app_isolation_variable_annotation(
 
 @pytest.mark.module(
     """\
-    from project.other.models import Model
+    from project.other.app.models import Model
     variable: Model = ...
     """
 )
 def test_app_isolation_assign_annotation(
+    checker: AppIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.component_config(allowed_imports=["project.other.app.models.Model"])
+@pytest.mark.module(
+    """\
+    from project.other.app.models import Model
+    Model.objects.get()
+    """
+)
+def test_app_isolation_allowed_import(
+    checker: AppIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.component_config(allowed_imports=["project.other.app.models.*"])
+@pytest.mark.module(
+    """\
+    from project.other.app.models import Model
+    Model.objects.get()
+    """
+)
+def test_app_isolation_allowed_import_star(
     checker: AppIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations

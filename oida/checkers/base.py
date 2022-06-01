@@ -1,6 +1,8 @@
 import ast
 from typing import ClassVar, NamedTuple
 
+from ..config import Config
+
 
 class Violation(NamedTuple):
     line: int
@@ -11,9 +13,12 @@ class Violation(NamedTuple):
 class Checker(ast.NodeVisitor):
     slug: ClassVar[str]
 
-    def __init__(self, module: str | None, name: str) -> None:
+    def __init__(
+        self, module: str | None, name: str, component_config: Config | None
+    ) -> None:
         self.module = module
         self.name = name
+        self.component_config = component_config
         self.violations: list[Violation] = []
 
     def report_violation(self, node: ast.AST, message: str) -> None:

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from .checkers import get_checkers
-from .discovery import find_modules
+from .discovery import find_modules, get_component_config
 
 
 def print_violation(file: Path, line: int, column: int, message: str) -> None:
@@ -12,8 +12,11 @@ def run(*paths: Path, checks: list[str]) -> bool:
     has_violations = False
     checkers = get_checkers(checks)
     for module in find_modules(paths):
+        config = get_component_config(path=module.path.parent)
         for checker_cls in checkers:
-            checker = checker_cls(module=module.module, name=module.name)
+            checker = checker_cls(
+                module=module.module, name=module.name, component_config=config
+            )
             checker.visit(module.ast)
             if checker.violations:
                 has_violations = True

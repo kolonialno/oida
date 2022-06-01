@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from functools import reduce
 from typing import Iterator
 
+from ..config import Config
 from .base import Checker
 
 
@@ -21,8 +22,8 @@ class AppIsolationChecker(Checker):
 
     slug = "app-isolation"
 
-    def __init__(self, module: str, name: str) -> None:
-        super().__init__(module, name)
+    def __init__(self, module: str, name: str, component_config: Config | None) -> None:
+        super().__init__(module, name, component_config)
         self.scopes: list[dict[str, str]] = [{}]
 
     @property
@@ -30,7 +31,7 @@ class AppIsolationChecker(Checker):
         return self.scopes[-1]
 
     @property
-    def in_scope(self) -> dict[str, str]:
+    def scope(self) -> dict[str, str]:
         return reduce(dict.__or__, self.scopes)
 
     @contextmanager
@@ -45,6 +46,27 @@ class AppIsolationChecker(Checker):
         if app_a == app_b:
             return True
 
+        return False
+
+    def is_import_allowed(self, full_name: str) -> bool:
+        allowed_imports: tuple[str, ...] = (
+            getattr(self.component_config, "allowed_imports", None) or ()
+        )
+
+        # Allow all imports at the root level of a component
+        path = full_name.split(".")
+        if len(path) == 4:
+            return True
+
+        while path:
+            if ".".join(path) in allowed_imports:
+                return True
+            if ".".join(path[:-1]) + ".*" in allowed_imports:
+                return True
+
+            path = path[:-1]
+
+        # Name was not found in the list of allowed imports
         return False
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
@@ -65,21 +87,10 @@ class AppIsolationChecker(Checker):
         if self.is_same_app(module_app, import_app):
             return
 
-        plural = "s" if len(node.names) > 1 else ""
-
-        if "services" in components and components[-1] != "services":
-            self.report_violation(
-                node, f'Non-public service{plural} imported from "{node.module}"'
-            )
-        elif "selectors" in components and components[-1] != "selectors":
-            self.report_violation(
-                node, f'Non-public selector{plural} imported from "{node.module}"'
-            )
-        elif components[-1] not in ("services", "selectors"):
-            for name in node.names:
-                self.current_scope[
-                    name.asname if name.asname else name.name
-                ] = f"{node.module}.{name.name}"
+        for name in node.names:
+            self.current_scope[
+                name.asname if name.asname else name.name
+            ] = f"{node.module}.{name.name}"
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         with self.push_scope():
@@ -88,16 +99,13 @@ class AppIsolationChecker(Checker):
     def visit_arg(self, node: ast.arg) -> None:
         """Implemented to avoid visit_Name being called for annotations"""
 
-        # TODO: Need to check the value bit
-
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
         """Implemented to avoid visit_Name being called for annotations"""
 
-        # TODO: Need to check the non-name side of things
+        self.generic_visit(node.target)
+        if node.value:
+            self.generic_visit(node.value)
 
     def visit_Name(self, node: ast.Name) -> None:
-        scope = self.in_scope
-        if node.id in scope:
-            self.report_violation(
-                node, f'Private variable "{scope[node.id]}" referenced'
-            )
+        if (name := self.scope.get(node.id)) and not self.is_import_allowed(name):
+            self.report_violation(node, f'Private attribute "{name}" referenced')

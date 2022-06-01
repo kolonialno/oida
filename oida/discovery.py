@@ -1,5 +1,10 @@
+import ast
+import functools
 from pathlib import Path
 from typing import Iterable
+
+from oida.checkers.config import CheckConfig
+from oida.config import Config
 
 from .module import Module
 
@@ -16,6 +21,36 @@ def get_module(path: Path) -> str:
         path = path.parent
 
     return ".".join(names)
+
+
+@functools.lru_cache
+def get_component_config(path: Path) -> Config | None:
+    """
+    Given a path to a directory find the relevant project config.
+    """
+
+    if not (path / "__init__.py").exists():
+        return None
+
+    if (conf_path := path / "confcomponent.py") and conf_path.exists():
+        return load_config(conf_path)
+
+    return get_component_config(path.parent)
+
+
+@functools.lru_cache(maxsize=None)
+def load_config(path: Path) -> Config:
+    """
+    Load component config from a file.
+    """
+
+    module = get_module(path.parent)
+    name = path.stem
+
+    checker = CheckConfig(module=module, name=name, component_config=None)
+    with open(path) as f:
+        checker.visit(ast.parse(f.read(), str(path)))
+    return checker.parsed_config
 
 
 def sort_paths(paths: Iterable[Path]) -> list[Path]:
