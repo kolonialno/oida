@@ -16,18 +16,21 @@
 ## Concepts
 
 Oida expects the code to be structured with a project as the top package and
-then apps as submodules below this
+then apps or components as submodules below this.
 
 Here's an example project structure:
 
     project/
         __init__.py
-        first_app/
+        my_component/
             __init__.py
+            first_app/
+                __init__.py
+                ...
+            second_app/
+                __init__.py
+                ....
             ...
-        second_app/
-            __init__.py
-            ....
         third_app/
             __init__.py
             ...
@@ -36,6 +39,6 @@ Here's an example project structure:
 
 ## Checks
 
- * **Apps:** This check validates that no imports are done across sub-modules.
- * **Imports:**: This module checks that relative imports to not cross app
-   boundaries.
+ * **Apps:** Checks that no imports are done across sub-modules.
+ * **Imports:** Checks that relative imports to not cross app boundaries.
+ * **Config:** Checks that component configuration files are valid
