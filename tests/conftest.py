@@ -65,14 +65,6 @@ def checker(request: pytest.FixtureRequest) -> Checker:
 
 
 @pytest.fixture
-def violation(checker: Checker) -> Violation:
-    """Convenience fixture when you only expect one violation"""
-
-    assert len(checker.violations) == 1
-    return checker.violations[0]
-
-
-@pytest.fixture
 def violations(checker: Checker) -> list[Violation]:
     """Convenience fixture for getting checker violations"""
 

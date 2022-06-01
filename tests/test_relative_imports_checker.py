@@ -8,13 +8,15 @@ pytestmark = pytest.mark.module(name="selectors", module="project.app")
 
 @pytest.mark.module("from ..other_app import something")
 def test_invalid_relative_import(
-    checker: RelativeImportsChecker, violation: Violation
+    checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
-    assert violation == Violation(
-        line=1,
-        column=0,
-        message='ODA001: Relative import outside app: "..other_app"',
-    )
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            message='ODA001: Relative import outside app: "..other_app"',
+        )
+    ]
 
 
 @pytest.mark.module(
@@ -24,20 +26,22 @@ def test_invalid_relative_import(
     """
 )
 def test_invalid_relative_import_inline(
-    checker: RelativeImportsChecker, violation: Violation
+    checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
-    assert violation == Violation(
-        line=2,
-        column=4,
-        message='ODA001: Relative import outside app: "..other_app"',
-    )
+    assert violations == [
+        Violation(
+            line=2,
+            column=4,
+            message='ODA001: Relative import outside app: "..other_app"',
+        )
+    ]
 
 
 @pytest.mark.module("from .models import Model")
 def test_valid_relative_import(
     checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
-    assert violations == []
+    assert not violations
 
 
 @pytest.mark.module(
@@ -49,20 +53,20 @@ def test_valid_relative_import(
 def test_valid_relative_import_inline(
     checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
-    assert violations == []
+    assert not violations
 
 
 @pytest.mark.module("from . import models")
 def test_valid_relative_module_import(
     checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
-    assert violations == []
+    assert not violations
 
 
 @pytest.mark.module("from .. import models")
 def test_invalid_relative_module_import(
-    checker: RelativeImportsChecker, violation: Violation
+    checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
-    assert violation == Violation(
-        line=1, column=0, message='ODA001: Relative import outside app: ".."'
-    )
+    assert violations == [
+        Violation(line=1, column=0, message='ODA001: Relative import outside app: ".."')
+    ]

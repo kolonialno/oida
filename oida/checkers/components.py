@@ -1,7 +1,7 @@
 import ast
 from contextlib import contextmanager
 from functools import reduce
-from typing import Iterator
+from typing import Any, Iterator
 
 from ..config import Config
 from .base import Checker
@@ -9,15 +9,23 @@ from .base import Checker
 
 class ComponentIsolationChecker(Checker):
     """
-    Check that for anything imported from another app that's not a service or
-    selector it's only used for typing purposes.
+    Check that isolation between components are guaranteed. That means that all
+    imports from other components should be from the other component's top
+    level. Other imports are allowed for typing purposes.
 
-    Example:
-        # project/app/services.py
-        from project.other_app.models import Model
+    Example 1:
+        # project/component/app/services.py
+        from project.other_component.app.models import Model
 
         def my_function(model: Model) -> None:  # <-- Allowed
             Model.objects.get()  # <-- Not allowed
+
+    Example 2:
+        # project/component/app/services.py
+        from project.other_component.services import my_service
+
+        def my_function() -> None:
+            my_service()  # <-- This is allowed because it's at the top level
     """
 
     slug = "component-isolation"
@@ -48,7 +56,7 @@ class ComponentIsolationChecker(Checker):
 
         return False
 
-    def is_import_allowed(self, full_name: str) -> bool:
+    def is_access_allowed(self, full_name: str) -> bool:
         allowed_imports: tuple[str, ...] = (
             getattr(self.component_config, "allowed_imports", None) or ()
         )
@@ -92,6 +100,19 @@ class ComponentIsolationChecker(Checker):
                 name.asname if name.asname else name.name
             ] = f"{node.module}.{name.name}"
 
+        # TODO: Check for too deep imports right off the bat, as they might not be accessed
+
+    def visit_Import(self, node: ast.Import) -> Any:
+        for name in node.names:
+            if name.asname:
+                self.current_scope[name.asname] = name.name
+            else:
+                # `import foo.bar` only sets foo in the local scope
+                top_name, *_ = name.name.split(".", 1)
+                self.current_scope[top_name] = top_name
+
+        # TODO: Check for too deep imports right off the bat, as they might not be accessed
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         with self.push_scope():
             self.generic_visit(node)
@@ -107,5 +128,35 @@ class ComponentIsolationChecker(Checker):
             self.generic_visit(node.value)
 
     def visit_Name(self, node: ast.Name) -> None:
-        if (name := self.scope.get(node.id)) and not self.is_import_allowed(name):
-            self.report_violation(node, f'Private attribute "{name}" referenced')
+        full_name = self.scope.get(node.id)
+        if full_name and not self.is_access_allowed(full_name):
+            self.report_violation(node, f'Private attribute "{full_name}" referenced')
+
+    def visit_Attribute(self, node: ast.Attribute) -> Any:
+
+        name = node.attr
+        while isinstance(node.value, ast.Attribute):
+            # If the attribute starts with an uppercase letter we want to start
+            # from the beginning
+            if node.value.attr[:1].isupper():
+                name = node.value.attr
+            else:
+                name = f"{node.value.attr}.{name}"
+            node = node.value
+
+        # If the attribute chain didn't end in a name we ignore it (ie. a
+        # function call or similar)
+        if not isinstance(node.value, ast.Name):
+            return
+
+        if node.value.id[:1].isupper():
+            return self.visit_Name(node.value)
+
+        import_name = self.scope.get(node.value.id)
+        if not import_name:
+            return
+
+        full_name = f"{import_name}.{name}"
+
+        if not self.is_access_allowed(full_name):
+            self.report_violation(node, f'Private attribute "{full_name}" referenced')

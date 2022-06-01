@@ -24,24 +24,28 @@ def test_config_allowed_imports_tuple_no_paren(
 
 @pytest.mark.module("ALLOWED_IMPORTS = None")
 def test_config_allowed_imports_wrong_type(
-    checker: ConfigChecker, violation: Violation
+    checker: ConfigChecker, violations: list[Violation]
 ) -> None:
-    assert violation == Violation(
-        line=1,
-        column=18,
-        message="ALLOWED_IMPORTS should be a tuple of string literals",
-    )
+    assert violations == [
+        Violation(
+            line=1,
+            column=18,
+            message="ALLOWED_IMPORTS should be a tuple of string literals",
+        )
+    ]
 
 
 @pytest.mark.module("ALLOWED_IMPORTS = ('str', None)")
 def test_config_allowed_imports_wrong_type_in_tuple(
-    checker: ConfigChecker, violation: Violation
+    checker: ConfigChecker, violations: list[Violation]
 ) -> None:
-    assert violation == Violation(
-        line=1,
-        column=18,
-        message="ALLOWED_IMPORTS should be a tuple of string literals",
-    )
+    assert violations == [
+        Violation(
+            line=1,
+            column=18,
+            message="ALLOWED_IMPORTS should be a tuple of string literals",
+        )
+    ]
 
 
 @pytest.mark.module("ALLOWED_IMPORTS: tuple[str, ...]")
@@ -52,26 +56,40 @@ def test_config_allowed_imports_type_only(
 
 
 @pytest.mark.module("FOO = bar")
-def test_config_unknown_constant(checker: ConfigChecker, violation: Violation) -> None:
-    assert violation == Violation(
-        line=1, column=0, message='Unknown constant "FOO" assigned in component config'
-    )
+def test_config_unknown_constant(
+    checker: ConfigChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            message='Unknown constant "FOO" assigned in component config',
+        )
+    ]
 
 
 @pytest.mark.module("FOO, BAR = baz")
-def test_config_unpack_assign(checker: ConfigChecker, violation: Violation) -> None:
-    assert violation == Violation(
-        line=1, column=0, message="Unsupported assignment in component config"
-    )
+def test_config_unpack_assign(
+    checker: ConfigChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1, column=0, message="Unsupported assignment in component config"
+        )
+    ]
 
 
 @pytest.mark.module("FOO: str = bar")
 def test_config_unknown_constant_with_annotation(
-    checker: ConfigChecker, violation: Violation
+    checker: ConfigChecker, violations: list[Violation]
 ) -> None:
-    assert violation == Violation(
-        line=1, column=0, message='Unknown constant "FOO" assigned in component config'
-    )
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            message='Unknown constant "FOO" assigned in component config',
+        )
+    ]
 
 
 @pytest.mark.module("ALLOWED_FOREIGN_KEYS = ('foo', 'bar')")
