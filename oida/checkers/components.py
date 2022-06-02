@@ -104,6 +104,10 @@ class ComponentIsolationChecker(Checker):
 
     def visit_Import(self, node: ast.Import) -> Any:
 
+        # Ignore files that are not in a module
+        if self.module is None:
+            return
+
         root_module_name, *_ = self.module.split(".", 2)
 
         for name in node.names:
