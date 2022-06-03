@@ -23,6 +23,7 @@ def test_app_isolation_private_service_import(
             message='Private attribute "project.other.app.services.service" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.services.service"}
 
 
 @pytest.mark.module(
@@ -44,6 +45,7 @@ def test_app_isolation_reference_violation(
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.models.Model"}
 
 
 @pytest.mark.module(
@@ -64,6 +66,7 @@ def test_app_isolation_reference_violation_non_top_level_import(
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.models.Model"}
 
 
 @pytest.mark.module(
@@ -83,6 +86,7 @@ def test_app_isolation_complex_import(
             message='Private attribute "project.other.app.services.private" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.services.private"}
 
 
 @pytest.mark.module(
@@ -101,6 +105,7 @@ def test_isolation_attribute_access_violation(
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.models.Model"}
 
 
 @pytest.mark.module(
@@ -119,6 +124,7 @@ def test_isolation_attribute_access_violation_root_import(
             message='Private attribute "project.other.app.services.service" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.services.service"}
 
 
 @pytest.mark.module(
@@ -137,6 +143,7 @@ def test_isolation_attribute_access_violation_plain_import(
             message='Private attribute "project.other.app.services.service" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.services.service"}
 
 
 @pytest.mark.module(
@@ -155,6 +162,7 @@ def test_isolation_attribute_access_model_import(
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.models.Model"}
 
 
 @pytest.mark.module(
@@ -173,6 +181,7 @@ def test_isolation_attribute_access_model_import_through_class(
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.models.Model"}
 
 
 @pytest.mark.skip("Not implemented yet")
@@ -188,3 +197,4 @@ def test_isolation_unused_import_violation(
             message='Private attribute "project.other.app.selectors.selector" referenced',
         )
     ]
+    assert checker.referenced_imports == {"project.other.app.selectors.select"}

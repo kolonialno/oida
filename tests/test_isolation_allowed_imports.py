@@ -18,6 +18,7 @@ def test_app_isolation_allowed_import(
 ) -> None:
     """Test that allow imports will skip global attribute access"""
     assert not violations
+    assert checker.referenced_imports == {"project.other.app.models.Model"}
 
 
 @pytest.mark.component_config(allowed_imports=["project.other.app.models.*"])
@@ -32,3 +33,4 @@ def test_app_isolation_allowed_import_star(
 ) -> None:
     """Test that wild card allow imports will skip global attribute access"""
     assert not violations
+    assert checker.referenced_imports == {"project.other.app.models.Model"}

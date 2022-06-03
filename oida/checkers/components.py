@@ -9,7 +9,7 @@ from .base import Checker
 
 class ComponentIsolationChecker(Checker):
     """
-    Check that isolation between components are guaranteed. That means that all
+    Check that isolation between components are respected. That means that all
     imports from other components should be from the other component's top
     level. Other imports are allowed for typing purposes.
 
@@ -33,6 +33,10 @@ class ComponentIsolationChecker(Checker):
     def __init__(self, module: str, name: str, component_config: Config | None) -> None:
         super().__init__(module, name, component_config)
         self.scopes: list[dict[str, str]] = [{}]
+        # This checker will collect any imports it sees, regardless of any
+        # config. This is used to automatically generate component configs with
+        # allowed imports based on current violations.
+        self.referenced_imports: set[str] = set()
 
     @property
     def current_scope(self) -> dict[str, str]:
@@ -56,15 +60,15 @@ class ComponentIsolationChecker(Checker):
 
         return False
 
-    def is_access_allowed(self, full_name: str) -> bool:
+    def is_access_allowed(self, path: list[str]) -> bool:
+        """Check of access to this name is allowed, not considering ignored rules"""
+        return len(path) <= 4
+
+    def is_violation_silenced(self, path: list[str]) -> bool:
+        """Check if a name that's a violation is ignored by component config"""
         allowed_imports: tuple[str, ...] = (
             getattr(self.component_config, "allowed_imports", None) or ()
         )
-
-        # Allow all imports at the root level of a component
-        path = full_name.split(".")
-        if len(path) == 4:
-            return True
 
         while path:
             if ".".join(path) in allowed_imports:
@@ -76,6 +80,22 @@ class ComponentIsolationChecker(Checker):
 
         # Name was not found in the list of allowed imports
         return False
+
+    def maybe_report_violation(self, full_name: str, node: ast.AST) -> None:
+        """Check a fully qualified name"""
+
+        path = full_name.split(".")
+        if self.is_access_allowed(path):
+            return
+
+        # If access is not allowed we should record the reference even if the
+        # violation is silenced
+        self.referenced_imports.add(full_name)
+
+        if self.is_violation_silenced(path):
+            return
+
+        self.report_violation(node, f'Private attribute "{full_name}" referenced')
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level > 0 or not self.module or not node.module:
@@ -99,8 +119,6 @@ class ComponentIsolationChecker(Checker):
             self.current_scope[
                 name.asname if name.asname else name.name
             ] = f"{node.module}.{name.name}"
-
-        # TODO: Check for too deep imports right off the bat, as they might not be accessed
 
     def visit_Import(self, node: ast.Import) -> Any:
 
@@ -139,9 +157,8 @@ class ComponentIsolationChecker(Checker):
             self.generic_visit(node.value)
 
     def visit_Name(self, node: ast.Name) -> None:
-        full_name = self.scope.get(node.id)
-        if full_name and not self.is_access_allowed(full_name):
-            self.report_violation(node, f'Private attribute "{full_name}" referenced')
+        if full_name := self.scope.get(node.id):
+            self.maybe_report_violation(full_name, node)
 
     def visit_Attribute(self, node: ast.Attribute) -> Any:
 
@@ -168,6 +185,4 @@ class ComponentIsolationChecker(Checker):
             return
 
         full_name = f"{import_name}.{name}"
-
-        if not self.is_access_allowed(full_name):
-            self.report_violation(node, f'Private attribute "{full_name}" referenced')
+        self.maybe_report_violation(full_name, node)
