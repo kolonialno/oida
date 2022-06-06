@@ -30,6 +30,7 @@ build-backend = "poetry.core.masonry.api"
 markers = [
     "module(name, package, path, content): Define the module to run the checker on",
     "component_config(allowed_imports=..., allowed_foreign_keys...): Set component config",
+    "project_files(file_mapping): Files to create in a temporary project directory",
 ]
 
 [tool.isort]

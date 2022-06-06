@@ -69,3 +69,23 @@ def violations(checker: Checker) -> list[Violation]:
     """Convenience fixture for getting checker violations"""
 
     return checker.violations
+
+
+@pytest.fixture
+def project_path(request: pytest.FixtureRequest, tmp_path: Path) -> Path:
+    """
+    Create a temporary directory with some files in. Looks for the
+    project_files marker and automatically creates any file defined by that.
+    """
+
+    files: dict[str, str] = {}
+    for marker in reversed(list(request.node.iter_markers("project_files"))):
+        files.update(marker.args[0])
+
+    for name, content in files.items():
+        file_path = tmp_path / name
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(file_path, "w+") as f:
+            f.write(textwrap.dedent(content))
+
+    return tmp_path
