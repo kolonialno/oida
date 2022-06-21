@@ -41,16 +41,14 @@ class Checker(ast.NodeVisitor):
             )
         )
 
-    def resolve_relative_import(self, name: str | None, level: int) -> str:
+    def resolve_relative_import(self, name: str | None, level: int) -> str | None:
         """Resolve a relative module name to an absolute one."""
 
-        # TODO: We can't crash on invalid code
-
         if not self.module:
-            raise ImportError("attempted relative import beyond top-level package")
+            return None
 
         bits = self.module.rsplit(".", level - 1)
         if len(bits) < level:
-            raise ImportError("attempted relative import beyond top-level package")
+            return None
         base = bits[0]
         return "{}.{}".format(base, name) if name else base

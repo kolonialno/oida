@@ -76,3 +76,17 @@ def test_invalid_relative_module_import(
             message='Relative import outside app: ".."',
         )
     ]
+
+
+@pytest.mark.module("from ... import models")
+def test_relative_module_import_outside_toplevel(
+    checker: RelativeImportsChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            code=Code.ODA001,
+            message='Relative import outside app: "..."',
+        )
+    ]
