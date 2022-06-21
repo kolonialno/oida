@@ -75,10 +75,10 @@ class ConfigChecker(Checker):
         if node.value is None:
             return
 
-        if not isinstance(node.value, ast.Tuple):
+        if not isinstance(node.value, ast.Set):
             return self.report_violation(
                 node.value,
-                "ALLOWED_IMPORTS should be a tuple of string literals",
+                "ALLOWED_IMPORTS should be a set of string literals",
             )
 
         if not all(
@@ -86,7 +86,7 @@ class ConfigChecker(Checker):
             for item in node.value.elts
         ):
             return self.report_violation(
-                node.value, "ALLOWED_IMPORTS should be a tuple of string literals"
+                node.value, "ALLOWED_IMPORTS should be a set of string literals"
             )
 
         self.parsed_config.allowed_imports = frozenset(
@@ -98,10 +98,10 @@ class ConfigChecker(Checker):
         if node.value is None:
             return
 
-        if not isinstance(node.value, ast.Tuple):
+        if not isinstance(node.value, ast.Set):
             return self.report_violation(
                 node.value,
-                "ALLOWED_FOREIGN_KEYS should be a tuple of string literals",
+                "ALLOWED_FOREIGN_KEYS should be a set of string literals",
             )
 
         if not all(
@@ -109,7 +109,7 @@ class ConfigChecker(Checker):
             for item in node.value.elts
         ):
             return self.report_violation(
-                node.value, "ALLOWED_FOREIGN_KEYS should be a tuple of string literals"
+                node.value, "ALLOWED_FOREIGN_KEYS should be a set of string literals"
             )
 
         self.parsed_config.allowed_foreign_keys = frozenset(

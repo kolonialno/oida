@@ -6,16 +6,8 @@ from oida.checkers.base import Violation
 pytestmark = pytest.mark.module(name="confcomponent", module="project.component")
 
 
-@pytest.mark.module("ALLOWED_IMPORTS = ('foo', 'bar')")
+@pytest.mark.module("ALLOWED_IMPORTS = {'foo', 'bar'}")
 def test_config_allowed_imports_no_annotation(
-    checker: ConfigChecker, violations: list[Violation]
-) -> None:
-    assert not violations
-    assert checker.parsed_config.allowed_imports == frozenset(("foo", "bar"))
-
-
-@pytest.mark.module("ALLOWED_IMPORTS = 'foo', 'bar'")
-def test_config_allowed_imports_tuple_no_paren(
     checker: ConfigChecker, violations: list[Violation]
 ) -> None:
     assert not violations
@@ -30,12 +22,25 @@ def test_config_allowed_imports_wrong_type(
         Violation(
             line=1,
             column=18,
-            message="ALLOWED_IMPORTS should be a tuple of string literals",
+            message="ALLOWED_IMPORTS should be a set of string literals",
         )
     ]
 
 
-@pytest.mark.module("ALLOWED_IMPORTS = ('str', None)")
+@pytest.mark.module("ALLOWED_IMPORTS = ('foo', 'bar')")
+def test_config_allowed_imports_tuple_not_set(
+    checker: ConfigChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1,
+            column=18,
+            message="ALLOWED_IMPORTS should be a set of string literals",
+        )
+    ]
+
+
+@pytest.mark.module("ALLOWED_IMPORTS = {'str', None}")
 def test_config_allowed_imports_wrong_type_in_tuple(
     checker: ConfigChecker, violations: list[Violation]
 ) -> None:
@@ -43,7 +48,7 @@ def test_config_allowed_imports_wrong_type_in_tuple(
         Violation(
             line=1,
             column=18,
-            message="ALLOWED_IMPORTS should be a tuple of string literals",
+            message="ALLOWED_IMPORTS should be a set of string literals",
         )
     ]
 
@@ -92,7 +97,7 @@ def test_config_unknown_constant_with_annotation(
     ]
 
 
-@pytest.mark.module("ALLOWED_FOREIGN_KEYS = ('foo', 'bar')")
+@pytest.mark.module("ALLOWED_FOREIGN_KEYS = {'foo', 'bar'}")
 def test_config_allowed_foreign_keys(
     checker: ConfigChecker, violations: list[Violation]
 ) -> None:
