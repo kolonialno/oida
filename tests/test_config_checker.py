@@ -11,7 +11,7 @@ def test_config_allowed_imports_no_annotation(
     checker: ConfigChecker, violations: list[Violation]
 ) -> None:
     assert not violations
-    assert checker.parsed_config.allowed_imports == ("foo", "bar")
+    assert checker.parsed_config.allowed_imports == frozenset(("foo", "bar"))
 
 
 @pytest.mark.module("ALLOWED_IMPORTS = 'foo', 'bar'")
@@ -19,7 +19,7 @@ def test_config_allowed_imports_tuple_no_paren(
     checker: ConfigChecker, violations: list[Violation]
 ) -> None:
     assert not violations
-    assert checker.parsed_config.allowed_imports == ("foo", "bar")
+    assert checker.parsed_config.allowed_imports == frozenset(("foo", "bar"))
 
 
 @pytest.mark.module("ALLOWED_IMPORTS = None")
@@ -97,4 +97,4 @@ def test_config_allowed_foreign_keys(
     checker: ConfigChecker, violations: list[Violation]
 ) -> None:
     assert not violations
-    assert checker.parsed_config.allowed_foreign_keys == ("foo", "bar")
+    assert checker.parsed_config.allowed_foreign_keys == frozenset(("foo", "bar"))

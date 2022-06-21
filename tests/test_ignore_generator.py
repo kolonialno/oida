@@ -1,8 +1,15 @@
+import textwrap
 from pathlib import Path
+from typing import Callable
 
+import libcst as cst
 import pytest
 
-from oida.config_generator import collect_violations
+from oida.config_generator import (
+    collect_violations,
+    update_allowed_imports,
+    update_component_config,
+)
 
 # Define a test project with a component and some files for the test to run
 # against. These files will be created as defined here unless overridden by a
@@ -65,3 +72,89 @@ def test_collect_violations(project_path: Path) -> None:
             "project.component.app.services.private",
         },
     }
+
+
+@pytest.mark.parametrize(
+    "current,violations,expected",
+    [
+        (set(), set(), set()),
+        ({"not.in.use"}, set(), set()),
+        (set(), {"this.is.a.violation"}, {"this.is.a.violation"}),
+        ({"this.is.a.*"}, {"this.is.a.violation"}, {"this.is.a.*"}),
+        (
+            {"this.is.a.*", "this.is.a.violation"},
+            {"this.is.a.violation"},
+            {"this.is.a.*"},
+        ),
+        (
+            {},
+            {"this.is.a.violation", "this.is.also.a.violation"},
+            {"this.is.a.violation", "this.is.also.a.violation"},
+        ),
+        (
+            {"this.*"},
+            {"this.is.a.violation", "this.is.also.a.violation"},
+            {"this.*"},
+        ),
+    ],
+    ids=[
+        "empty",
+        "remove-unused",
+        "add-new-violation",
+        "use-wildcard",
+        "remove-duplicated-by-wildcard",
+        "multiple-violations",
+        "multiple-violations-wildcard",
+    ],
+)
+def test_update_allowed_imports(
+    current: set[str], violations: set[str], expected: set[str]
+) -> None:
+    assert update_allowed_imports(current, violations) == expected
+
+
+@pytest.mark.parametrize(
+    "config,violations,expected_output",
+    [
+        ("", set(), ""),
+        ("", {"this.*"}, 'ALLOWED_IMPORTS: set[str] = {"this.*"}\n'),
+        (
+            "ALLOWED_IMPORTS: set[str] = set()",
+            {"this.*"},
+            'ALLOWED_IMPORTS: set[str] = {"this.*"}\n',
+        ),
+        (
+            """\
+            ALLOWED_IMPORTS: set[str] = {
+                # This is a comment
+                "foo",
+            }
+            """,
+            {"foo", "this.*"},
+            """\
+            ALLOWED_IMPORTS: set[str] = {
+                # This is a comment
+                "foo",
+                "this.*",
+            }
+            """,
+        ),
+        ('ALLOWED_IMPORTS: set[str] = {"this.*"}', set(), ""),
+    ],
+    ids=[
+        "empty",
+        "add-violation-no-constan-no-constantt",
+        "add-violation-to-empty-set",
+        "should-keep-comments",
+        "remove-unused-config",
+    ],
+)
+def test_update_config(
+    call_black: Callable[[str], str],
+    config: str,
+    violations: set[str],
+    expected_output: str,
+) -> None:
+    node = cst.parse_module(textwrap.dedent(config))
+    updated_config = update_component_config(node, allowed_imports=violations)
+    assert call_black(updated_config.code) == textwrap.dedent(expected_output)

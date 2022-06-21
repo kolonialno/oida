@@ -1,6 +1,7 @@
+import subprocess
 import textwrap
 from pathlib import Path
-from typing import Type, get_type_hints
+from typing import Callable, Type, get_type_hints
 
 import pytest
 
@@ -47,8 +48,10 @@ def checker(request: pytest.FixtureRequest) -> Checker:
 
     if marker := request.node.get_closest_marker("component_config"):
         config = Config(
-            allowed_imports=tuple(marker.kwargs.get("allowed_imports", ())),
-            allowed_foreign_keys=tuple(marker.kwargs.get("allowed_foreign_keys", ())),
+            allowed_imports=frozenset(marker.kwargs.get("allowed_imports", ())),
+            allowed_foreign_keys=frozenset(
+                marker.kwargs.get("allowed_foreign_keys", ())
+            ),
         )
 
     # Infer the checker to use from the type hint of the fixture parameter
@@ -89,3 +92,13 @@ def project_path(request: pytest.FixtureRequest, tmp_path: Path) -> Path:
             f.write(textwrap.dedent(content))
 
     return tmp_path
+
+
+@pytest.fixture
+def call_black() -> Callable[[str], str]:
+    def inner(value: str) -> str:
+        return subprocess.run(
+            ["black", "-c", value], capture_output=True, encoding="utf-8", check=True
+        ).stdout
+
+    return inner

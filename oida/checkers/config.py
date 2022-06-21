@@ -89,7 +89,7 @@ class ConfigChecker(Checker):
                 node.value, "ALLOWED_IMPORTS should be a tuple of string literals"
             )
 
-        self.parsed_config.allowed_imports = tuple(
+        self.parsed_config.allowed_imports = frozenset(
             cast(ast.Constant, item).value for item in node.value.elts
         )
 
@@ -112,6 +112,6 @@ class ConfigChecker(Checker):
                 node.value, "ALLOWED_FOREIGN_KEYS should be a tuple of string literals"
             )
 
-        self.parsed_config.allowed_foreign_keys = tuple(
+        self.parsed_config.allowed_foreign_keys = frozenset(
             cast(ast.Constant, item).value for item in node.value.elts
         )
