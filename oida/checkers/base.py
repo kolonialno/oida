@@ -1,12 +1,22 @@
 import ast
+import enum
 from typing import ClassVar, NamedTuple
 
 from ..config import Config
 
 
+class Code(int, enum.Enum):
+    ODA001 = 1  # Relative import outside app
+    ODA002 = 2  # Invalid statement in config
+    ODA003 = 3  # Invalid ALLOWED_IMPORTS statement in config
+    ODA004 = 4  # Invalid ALLOWED_FOREIGN_KEYS statement in config
+    ODA005 = 5  # Private attribute referenced
+
+
 class Violation(NamedTuple):
     line: int
     column: int
+    code: Code
     message: str
 
 
@@ -21,11 +31,12 @@ class Checker(ast.NodeVisitor):
         self.component_config = component_config
         self.violations: list[Violation] = []
 
-    def report_violation(self, node: ast.AST, message: str) -> None:
+    def report_violation(self, node: ast.AST, code: Code, message: str) -> None:
         self.violations.append(
             Violation(
                 line=node.lineno,
                 column=node.col_offset,
+                code=code,
                 message=message,
             )
         )

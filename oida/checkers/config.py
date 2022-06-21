@@ -2,7 +2,7 @@ import ast
 from typing import cast
 
 from ..config import Config
-from .base import Checker
+from .base import Checker, Code
 
 
 class ConfigChecker(Checker):
@@ -34,6 +34,7 @@ class ConfigChecker(Checker):
             else:
                 self.report_violation(
                     statement,
+                    Code.ODA002,
                     "Component config files should only contain assignment statements",
                 )
 
@@ -41,7 +42,7 @@ class ConfigChecker(Checker):
         target = node.target
         if not isinstance(target, ast.Name):
             return self.report_violation(
-                node, "Unsupported assignment in component config"
+                node, Code.ODA002, "Unsupported assignment in component config"
             )
 
         return self.check_assign(target.id, node)
@@ -52,7 +53,7 @@ class ConfigChecker(Checker):
                 self.check_assign(target.id, node)
             case _:
                 self.report_violation(
-                    node, "Unsupported assignment in component config"
+                    node, Code.ODA002, "Unsupported assignment in component config"
                 )
 
     #####################
@@ -67,7 +68,9 @@ class ConfigChecker(Checker):
             self.check_allowed_foreign_keys(node)
         else:
             self.report_violation(
-                node, f'Unknown constant "{name}" assigned in component config'
+                node,
+                Code.ODA002,
+                f'Unknown constant "{name}" assigned in component config',
             )
 
     def check_allowed_imports(self, node: ast.AnnAssign | ast.Assign) -> None:
@@ -78,6 +81,7 @@ class ConfigChecker(Checker):
         if not isinstance(node.value, ast.Set):
             return self.report_violation(
                 node.value,
+                Code.ODA003,
                 "ALLOWED_IMPORTS should be a set of string literals",
             )
 
@@ -86,7 +90,9 @@ class ConfigChecker(Checker):
             for item in node.value.elts
         ):
             return self.report_violation(
-                node.value, "ALLOWED_IMPORTS should be a set of string literals"
+                node.value,
+                Code.ODA003,
+                "ALLOWED_IMPORTS should be a set of string literals",
             )
 
         self.parsed_config.allowed_imports = frozenset(
@@ -101,6 +107,7 @@ class ConfigChecker(Checker):
         if not isinstance(node.value, ast.Set):
             return self.report_violation(
                 node.value,
+                Code.ODA004,
                 "ALLOWED_FOREIGN_KEYS should be a set of string literals",
             )
 
@@ -109,7 +116,9 @@ class ConfigChecker(Checker):
             for item in node.value.elts
         ):
             return self.report_violation(
-                node.value, "ALLOWED_FOREIGN_KEYS should be a set of string literals"
+                node.value,
+                Code.ODA004,
+                "ALLOWED_FOREIGN_KEYS should be a set of string literals",
             )
 
         self.parsed_config.allowed_foreign_keys = frozenset(

@@ -1,6 +1,6 @@
 import ast
 
-from .base import Checker
+from .base import Checker, Code
 
 
 class RelativeImportsChecker(Checker):
@@ -33,5 +33,5 @@ class RelativeImportsChecker(Checker):
         if absolute_import[:2] != [project, app]:
             import_name = "." * node.level + (node.module if node.module else "")
             self.report_violation(
-                node, f'ODA001: Relative import outside app: "{import_name}"'
+                node, Code.ODA001, f'Relative import outside app: "{import_name}"'
             )

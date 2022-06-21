@@ -1,7 +1,6 @@
 import pytest
 
-from oida.checkers import ConfigChecker
-from oida.checkers.base import Violation
+from oida.checkers import Code, ConfigChecker, Violation
 
 pytestmark = pytest.mark.module(name="confcomponent", module="project.component")
 
@@ -22,6 +21,7 @@ def test_config_allowed_imports_wrong_type(
         Violation(
             line=1,
             column=18,
+            code=Code.ODA003,
             message="ALLOWED_IMPORTS should be a set of string literals",
         )
     ]
@@ -35,6 +35,7 @@ def test_config_allowed_imports_tuple_not_set(
         Violation(
             line=1,
             column=18,
+            code=Code.ODA003,
             message="ALLOWED_IMPORTS should be a set of string literals",
         )
     ]
@@ -48,6 +49,7 @@ def test_config_allowed_imports_wrong_type_in_tuple(
         Violation(
             line=1,
             column=18,
+            code=Code.ODA003,
             message="ALLOWED_IMPORTS should be a set of string literals",
         )
     ]
@@ -68,6 +70,7 @@ def test_config_unknown_constant(
         Violation(
             line=1,
             column=0,
+            code=Code.ODA002,
             message='Unknown constant "FOO" assigned in component config',
         )
     ]
@@ -79,7 +82,10 @@ def test_config_unpack_assign(
 ) -> None:
     assert violations == [
         Violation(
-            line=1, column=0, message="Unsupported assignment in component config"
+            line=1,
+            column=0,
+            code=Code.ODA002,
+            message="Unsupported assignment in component config",
         )
     ]
 
@@ -92,6 +98,7 @@ def test_config_unknown_constant_with_annotation(
         Violation(
             line=1,
             column=0,
+            code=Code.ODA002,
             message='Unknown constant "FOO" assigned in component config',
         )
     ]

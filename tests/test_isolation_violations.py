@@ -1,7 +1,6 @@
 import pytest
 
-from oida.checkers import ComponentIsolationChecker
-from oida.checkers.base import Violation
+from oida.checkers import Code, ComponentIsolationChecker, Violation
 
 pytestmark = pytest.mark.module(name="selectors", module="project.component.app")
 
@@ -20,6 +19,7 @@ def test_app_isolation_private_service_import(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.services.service" referenced',
         )
     ]
@@ -42,6 +42,7 @@ def test_app_isolation_reference_violation(
         Violation(
             line=4,
             column=4,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
@@ -63,6 +64,7 @@ def test_app_isolation_reference_violation_non_top_level_import(
         Violation(
             line=3,
             column=4,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
@@ -83,6 +85,7 @@ def test_app_isolation_complex_import(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.services.private" referenced',
         )
     ]
@@ -102,6 +105,7 @@ def test_isolation_attribute_access_violation(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
@@ -121,6 +125,7 @@ def test_isolation_attribute_access_violation_root_import(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.services.service" referenced',
         )
     ]
@@ -140,6 +145,7 @@ def test_isolation_attribute_access_violation_plain_import(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.services.service" referenced',
         )
     ]
@@ -159,6 +165,7 @@ def test_isolation_attribute_access_model_import(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
@@ -178,6 +185,7 @@ def test_isolation_attribute_access_model_import_through_class(
         Violation(
             line=2,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.models.Model" referenced',
         )
     ]
@@ -194,6 +202,7 @@ def test_isolation_unused_import_violation(
         Violation(
             line=0,
             column=0,
+            code=Code.ODA005,
             message='Private attribute "project.other.app.selectors.selector" referenced',
         )
     ]

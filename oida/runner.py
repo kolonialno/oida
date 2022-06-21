@@ -1,10 +1,12 @@
 from pathlib import Path
 
-from .checkers import get_checkers
+from .checkers import Code, get_checkers
 from .discovery import find_modules, get_component_config
 
 
-def print_violation(file: Path, line: int, column: int, message: str) -> None:
+def print_violation(
+    file: Path, line: int, column: int, code: Code, message: str
+) -> None:
     print(f"{file}:{line}:{column}: {message}")
 
 

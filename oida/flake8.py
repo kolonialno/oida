@@ -7,7 +7,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Any, Generator, Type
 
-from .checkers import RelativeImportsChecker
+from .checkers import get_checkers
 from .discovery import get_component_config, get_module
 
 
@@ -25,7 +25,8 @@ class Plugin:
         self._config = get_component_config(path.parent)
 
     def run(self) -> Generator[tuple[int, int, str, Type[Any]], None, None]:
-        checker = RelativeImportsChecker(self._module, self._name, self._config)
-        checker.visit(self._tree)
-        for line, col, message in checker.violations:
-            yield line, col, message, type(self)
+        for checker_cls in get_checkers():
+            checker = checker_cls(self._module, self._name, self._config)
+            checker.visit(self._tree)
+            for line, col, code, message in checker.violations:
+                yield line, col, f"ODA{code:03d} {message}", type(self)

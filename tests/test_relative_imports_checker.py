@@ -1,7 +1,6 @@
 import pytest
 
-from oida.checkers import RelativeImportsChecker
-from oida.checkers.base import Violation
+from oida.checkers import Code, RelativeImportsChecker, Violation
 
 pytestmark = pytest.mark.module(name="selectors", module="project.app")
 
@@ -14,7 +13,8 @@ def test_invalid_relative_import(
         Violation(
             line=1,
             column=0,
-            message='ODA001: Relative import outside app: "..other_app"',
+            code=Code.ODA001,
+            message='Relative import outside app: "..other_app"',
         )
     ]
 
@@ -32,7 +32,8 @@ def test_invalid_relative_import_inline(
         Violation(
             line=2,
             column=4,
-            message='ODA001: Relative import outside app: "..other_app"',
+            code=Code.ODA001,
+            message='Relative import outside app: "..other_app"',
         )
     ]
 
@@ -68,5 +69,10 @@ def test_invalid_relative_module_import(
     checker: RelativeImportsChecker, violations: list[Violation]
 ) -> None:
     assert violations == [
-        Violation(line=1, column=0, message='ODA001: Relative import outside app: ".."')
+        Violation(
+            line=1,
+            column=0,
+            code=Code.ODA001,
+            message='Relative import outside app: ".."',
+        )
     ]

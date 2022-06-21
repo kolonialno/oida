@@ -4,7 +4,7 @@ from functools import reduce
 from typing import Any, Iterator
 
 from ..config import Config
-from .base import Checker
+from .base import Checker, Code
 
 
 class ComponentIsolationChecker(Checker):
@@ -95,7 +95,9 @@ class ComponentIsolationChecker(Checker):
         if self.is_violation_silenced(path):
             return
 
-        self.report_violation(node, f'Private attribute "{full_name}" referenced')
+        self.report_violation(
+            node, Code.ODA005, f'Private attribute "{full_name}" referenced'
+        )
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level > 0 or not self.module or not node.module:
