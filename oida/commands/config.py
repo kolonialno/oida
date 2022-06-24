@@ -2,9 +2,7 @@ from pathlib import Path
 
 import libcst as cst
 
-from ..checkers import ComponentIsolationChecker
 from ..config_generator import collect_violations, update_component_config
-from ..discovery import find_modules, get_component_config
 
 
 def generate_config(project_root: Path) -> None:
