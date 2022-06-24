@@ -100,7 +100,7 @@ def check_file(path: Path, module: str | None = None) -> Module:
     )
 
 
-def find_modules(paths: tuple[Path, ...]) -> Iterable[Module]:
+def find_modules(*paths: Path) -> Iterable[Module]:
     """
     Recursively check modules, starting at the given path.
     """

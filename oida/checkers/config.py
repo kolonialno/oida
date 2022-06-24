@@ -12,7 +12,9 @@ class ConfigChecker(Checker):
 
     slug = "config"
 
-    def __init__(self, module: str, name: str, component_config: Config | None) -> None:
+    def __init__(
+        self, module: str | None, name: str, component_config: Config | None
+    ) -> None:
         super().__init__(module, name, component_config)
         self.parsed_config = Config()
 

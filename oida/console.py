@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .checkers import get_checkers
-from .commands import run_linter
+from .commands import generate_config, run_linter
 
 
 def main() -> None:
@@ -13,7 +13,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    lint_parser = subparsers.add_parser("lint", help="Run linting on a projec")
+    lint_parser = subparsers.add_parser("lint", help="Run linting on a project")
     lint_parser.add_argument(
         "paths",
         metavar="path",
@@ -29,10 +29,20 @@ def main() -> None:
         choices=[checker_cls.slug for checker_cls in get_checkers()],
     )
 
+    config_parser = subparsers.add_parser(
+        "config",
+        help="Generate component config files that whitelist all isolation violations",
+    )
+    config_parser.add_argument(
+        "project_root", type=Path, help="Path to project root directory"
+    )
+
     args = parser.parse_args()
 
     if args.command == "lint":
         if not run_linter(*args.paths, checks=args.checks):
             sys.exit(1)
+    elif args.command == "config":
+        generate_config(args.project_root)
     else:
         sys.exit(f"Unknown command: {args.command}")

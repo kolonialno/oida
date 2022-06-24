@@ -30,7 +30,9 @@ class ComponentIsolationChecker(Checker):
 
     slug = "component-isolation"
 
-    def __init__(self, module: str, name: str, component_config: Config | None) -> None:
+    def __init__(
+        self, module: str | None, name: str, component_config: Config | None
+    ) -> None:
         super().__init__(module, name, component_config)
         self.scopes: list[dict[str, str]] = [{}]
         # This checker will collect any imports it sees, regardless of any

@@ -13,7 +13,7 @@ def print_violation(
 def run_linter(*paths: Path, checks: list[str]) -> bool:
     has_violations = False
     checkers = get_checkers(checks)
-    for module in find_modules(paths):
+    for module in find_modules(*paths):
         config = get_component_config(path=module.path.parent)
         for checker_cls in checkers:
             checker = checker_cls(
