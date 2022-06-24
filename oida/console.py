@@ -2,30 +2,37 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import checkers
-from .runner import run
+from .checkers import get_checkers
+from .linter import run_linter
 
 
 def main() -> None:
-    checks = [getattr(checkers, name).slug for name in checkers.__all__]
 
     parser = argparse.ArgumentParser(description="Django project linter.")
-    parser.add_argument(
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    lint_parser = subparsers.add_parser("lint", help="Run linting on a projec")
+    lint_parser.add_argument(
         "paths",
         metavar="path",
         type=Path,
         nargs="+",
         help="One or more paths to check",
     )
-    parser.add_argument(
+    lint_parser.add_argument(
         "--check",
         dest="checks",
         action="append",
         help="Specify checks to run",
-        choices=checks,
+        choices=[checker_cls.slug for checker_cls in get_checkers()],
     )
 
     args = parser.parse_args()
 
-    if not run(*args.paths, checks=args.checks):
-        sys.exit(1)
+    if args.command == "lint":
+        if not run_linter(*args.paths, checks=args.checks):
+            sys.exit(1)
+    else:
+        sys.exit(f"Unknown command: {args.command}")

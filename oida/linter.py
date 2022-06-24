@@ -10,7 +10,7 @@ def print_violation(
     print(f"{file}:{line}:{column}: {message}")
 
 
-def run(*paths: Path, checks: list[str]) -> bool:
+def run_linter(*paths: Path, checks: list[str]) -> bool:
     has_violations = False
     checkers = get_checkers(checks)
     for module in find_modules(paths):
