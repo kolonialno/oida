@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .checkers import get_checkers
-from .linter import run_linter
+from .commands import run_linter
 
 
 def main() -> None:

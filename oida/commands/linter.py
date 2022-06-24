@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from .checkers import Code, get_checkers
-from .discovery import find_modules, get_component_config
+from ..checkers import Code, get_checkers
+from ..discovery import find_modules, get_component_config
 
 
 def print_violation(

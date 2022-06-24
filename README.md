@@ -10,7 +10,7 @@
 
 ## Usage
 
-    oida <path>
+    oida lint <path>
 
 
 ## Concepts
