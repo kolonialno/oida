@@ -1,6 +1,5 @@
 import textwrap
 from pathlib import Path
-from typing import Callable
 
 import libcst as cst
 import pytest
@@ -10,6 +9,7 @@ from oida.config_generator import (
     update_allowed_imports,
     update_component_config,
 )
+from oida.utils import run_black
 
 # Define a test project with a component and some files for the test to run
 # against. These files will be created as defined here unless overridden by a
@@ -150,11 +150,10 @@ def test_update_allowed_imports(
     ],
 )
 def test_update_config(
-    call_black: Callable[[str], str],
     config: str,
     violations: set[str],
     expected_output: str,
 ) -> None:
     node = cst.parse_module(textwrap.dedent(config))
     updated_config = update_component_config(node, allowed_imports=violations)
-    assert call_black(updated_config.code) == textwrap.dedent(expected_output)
+    assert run_black(updated_config.code) == textwrap.dedent(expected_output)

@@ -104,7 +104,7 @@ def update_component_config(node: cst.Module, allowed_imports: set[str]) -> cst.
                         value=cst.Set(
                             [
                                 cst.Element(cst.SimpleString(f'"{value}"'))
-                                for value in allowed_imports
+                                for value in sorted(allowed_imports)
                             ]
                         ),
                     )
@@ -141,7 +141,7 @@ def update_allowed_imports_statement(
             in updated_rules
         ]
 
-        for rule in updated_rules:
+        for rule in sorted(updated_rules):
             if rule in current_rules:
                 continue
 
