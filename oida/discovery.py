@@ -114,8 +114,8 @@ def find_modules(*paths: Path) -> Iterable[Module]:
 
 def find_project_root(path: Path) -> Path:
 
-    ROOT_MARKERS = {"pyproject.toml", "setup.cfg", ".git"}
-    if path.is_dir() and any(child.name in ROOT_MARKERS for child in path.iterdir()):
+    root_markers = {"pyproject.toml", "setup.cfg", ".git"}
+    if path.is_dir() and any(child.name in root_markers for child in path.iterdir()):
         return path
 
     if path.parent == path:

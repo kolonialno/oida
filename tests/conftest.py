@@ -1,7 +1,6 @@
-import subprocess
 import textwrap
 from pathlib import Path
-from typing import Callable, Type, get_type_hints
+from typing import Type, get_type_hints
 
 import pytest
 
