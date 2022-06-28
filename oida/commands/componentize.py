@@ -44,11 +44,11 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
         print("Remvoing old app directory")
         old_path.unlink()
 
-    print("Updating imports from moved app")
-    update_imports(project_root, old_path, new_path)
-
-    print("Updating app label")
+    print("Updating app config")
     update_or_create_app_config(old_path, new_path)
+
+    print("Updating imports from moved app (might take a while)")
+    update_imports(project_root, old_path, new_path)
 
 
 def update_imports(project_root: Path, old_path: Path, new_path: Path) -> None:

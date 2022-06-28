@@ -46,7 +46,7 @@ from oida.commands.componentize import AppConfigUpdater
         "leave label, update class name and name",
     ],
 )
-def test_add_label_and_rename_app_config(module: str, expected_output: str) -> None:
+def testapp_config_updater(module: str, expected_output: str) -> None:
     wrapper = cst.MetadataWrapper(cst.parse_module(textwrap.dedent(module)))
     updated_module = wrapper.visit(
         AppConfigUpdater(
