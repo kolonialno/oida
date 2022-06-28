@@ -92,13 +92,3 @@ def project_path(request: pytest.FixtureRequest, tmp_path: Path) -> Path:
             f.write(textwrap.dedent(content))
 
     return tmp_path
-
-
-@pytest.fixture
-def call_black() -> Callable[[str], str]:
-    def inner(value: str) -> str:
-        return subprocess.run(
-            ["black", "-c", value], capture_output=True, encoding="utf-8", check=True
-        ).stdout
-
-    return inner

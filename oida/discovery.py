@@ -110,3 +110,15 @@ def find_modules(*paths: Path) -> Iterable[Module]:
             yield from check_directory(path)
         elif path.suffix in (".py", ".pyi"):
             yield check_file(path)
+
+
+def find_project_root(path: Path) -> Path:
+
+    ROOT_MARKERS = {"pyproject.toml", "setup.cfg", ".git"}
+    if path.is_dir() and any(child.name in ROOT_MARKERS for child in path.iterdir()):
+        return path
+
+    if path.parent == path:
+        raise RuntimeError("Unable to find project root")
+
+    return find_project_root(path.parent)

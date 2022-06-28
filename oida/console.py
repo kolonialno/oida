@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from .checkers import get_checkers
-from .commands import generate_config, run_linter
+from .commands import componentize_app, generate_config, run_linter
 
 
 def main() -> None:
@@ -37,6 +37,13 @@ def main() -> None:
         "project_root", type=Path, help="Path to project root directory"
     )
 
+    componentize_parser = subparsers.add_parser(
+        "componentize",
+        help=componentize_app.__doc__,
+    )
+    componentize_parser.add_argument("path", type=Path, help="Path to app")
+    componentize_parser.add_argument("new_path", type=Path, help="Path to move app to")
+
     args = parser.parse_args()
 
     if args.command == "lint":
@@ -44,5 +51,7 @@ def main() -> None:
             sys.exit(1)
     elif args.command == "config":
         generate_config(args.project_root)
+    elif args.command == "componentize":
+        componentize_app(args.path, args.new_path)
     else:
         sys.exit(f"Unknown command: {args.command}")
