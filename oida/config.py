@@ -3,7 +3,7 @@ from typing import Iterable
 
 
 @dataclass
-class Config:
+class ComponentConfig:
     allowed_imports: frozenset[str] = frozenset()
     allowed_foreign_keys: frozenset[str] = frozenset()
 

@@ -5,7 +5,7 @@ from typing import Type, get_type_hints
 import pytest
 
 from oida.checkers.base import Checker, Violation
-from oida.config import Config
+from oida.config import ComponentConfig
 from oida.module import Module
 
 
@@ -22,7 +22,7 @@ def checker(request: pytest.FixtureRequest) -> Checker:
             ...
     """
 
-    config: Config | None = None
+    config: ComponentConfig | None = None
     module: str | None = None
     name: str | None = None
     content: str | None = None
@@ -46,7 +46,7 @@ def checker(request: pytest.FixtureRequest) -> Checker:
     m = Module(module=module, name=name, path=path, content=textwrap.dedent(content))
 
     if marker := request.node.get_closest_marker("component_config"):
-        config = Config(
+        config = ComponentConfig(
             allowed_imports=frozenset(marker.kwargs.get("allowed_imports", ())),
             allowed_foreign_keys=frozenset(
                 marker.kwargs.get("allowed_foreign_keys", ())

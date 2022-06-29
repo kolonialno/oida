@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from functools import reduce
 from typing import Any, Iterator
 
-from ..config import Config
+from ..config import ComponentConfig
 from .base import Checker, Code
 
 
@@ -31,7 +31,7 @@ class ComponentIsolationChecker(Checker):
     slug = "component-isolation"
 
     def __init__(
-        self, module: str | None, name: str, component_config: Config | None
+        self, module: str | None, name: str, component_config: ComponentConfig | None
     ) -> None:
         super().__init__(module, name, component_config)
         self.scopes: list[dict[str, str]] = [{}]

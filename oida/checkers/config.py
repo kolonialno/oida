@@ -1,7 +1,7 @@
 import ast
 from typing import cast
 
-from ..config import Config
+from ..config import ComponentConfig
 from .base import Checker, Code
 
 
@@ -13,10 +13,10 @@ class ConfigChecker(Checker):
     slug = "config"
 
     def __init__(
-        self, module: str | None, name: str, component_config: Config | None
+        self, module: str | None, name: str, component_config: ComponentConfig | None
     ) -> None:
         super().__init__(module, name, component_config)
-        self.parsed_config = Config()
+        self.parsed_config = ComponentConfig()
 
     #####################
     # Ast node visiting #

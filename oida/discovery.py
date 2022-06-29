@@ -3,9 +3,8 @@ import functools
 from pathlib import Path
 from typing import Iterable
 
-from oida.checkers import ConfigChecker
-from oida.config import Config
-
+from .checkers import ConfigChecker
+from .config import ComponentConfig
 from .module import Module
 
 
@@ -24,7 +23,7 @@ def get_module(path: Path) -> str:
 
 
 @functools.lru_cache
-def get_component_config(path: Path) -> Config | None:
+def get_component_config(path: Path) -> ComponentConfig | None:
     """
     Given a path to a directory find the relevant project config.
     """
@@ -39,7 +38,7 @@ def get_component_config(path: Path) -> Config | None:
 
 
 @functools.lru_cache(maxsize=None)
-def load_config(path: Path) -> Config:
+def load_config(path: Path) -> ComponentConfig:
     """
     Load component config from a file.
     """

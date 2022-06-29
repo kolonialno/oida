@@ -41,7 +41,7 @@ def main() -> None:
         "componentize",
         help=componentize_app.__doc__,
     )
-    componentize_parser.add_argument("path", type=Path, help="Path to app")
+    componentize_parser.add_argument("old_path", type=Path, help="Current path to app")
     componentize_parser.add_argument("new_path", type=Path, help="Path to move app to")
 
     args = parser.parse_args()
@@ -52,6 +52,6 @@ def main() -> None:
     elif args.command == "config":
         generate_config(args.project_root)
     elif args.command == "componentize":
-        componentize_app(args.path, args.new_path)
+        componentize_app(args.old_path, args.new_path)
     else:
         sys.exit(f"Unknown command: {args.command}")
