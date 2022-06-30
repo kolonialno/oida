@@ -15,7 +15,7 @@ def run_linter(*paths: Path, checks: list[str]) -> bool:
     checkers = get_checkers(checks)
     for module in find_modules(*paths):
         component_config = get_component_config(path=module.path.parent)
-        project_config = get_project_config(pathh=module.path.parent)
+        project_config = get_project_config(path=module.path.parent)
         for checker_cls in checkers:
             checker = checker_cls(
                 module=module.module,
