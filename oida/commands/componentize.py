@@ -33,7 +33,7 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
 
     print("Ensuring all __init__.py files exist")
     path = new_path.resolve()
-    while path.parent != root_module:
+    while path != root_module:
         init_py_file_path = path / "__init__.py"
         init_py_file_path.touch(exist_ok=True)
         path = path.parent
