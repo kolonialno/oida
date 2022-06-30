@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .checkers import ConfigChecker
-from .config import ComponentConfig
+from .config import ComponentConfig, ProjectConfig
 from .module import Module
 
 
@@ -15,11 +15,26 @@ def get_module(path: Path) -> str:
     """
 
     names: list[str] = [path.stem] if path.is_dir() else []
-    while path.parent and (path.parent / "__init__.py").exists():
+    while (path.parent / "__init__.py").exists():
         names.insert(0, path.parent.stem)
         path = path.parent
 
     return ".".join(names)
+
+
+@functools.lru_cache
+def get_project_config(path: Path) -> ProjectConfig:
+
+    pyproject_toml_path = path / "pyproject.toml"
+
+    if pyproject_toml_path.exists():
+        return ProjectConfig.from_pyproject_toml(pyproject_toml_path.read_text())
+
+    if path.parent != path:
+        return get_project_config(path.parent)
+
+    # Fall back to returning an empty config
+    return ProjectConfig()
 
 
 @functools.lru_cache
@@ -32,13 +47,13 @@ def get_component_config(path: Path) -> ComponentConfig | None:
         return None
 
     if (conf_path := path / "confcomponent.py") and conf_path.exists():
-        return load_config(conf_path)
+        return load_component_config(conf_path)
 
     return get_component_config(path.parent)
 
 
 @functools.lru_cache(maxsize=None)
-def load_config(path: Path) -> ComponentConfig:
+def load_component_config(path: Path) -> ComponentConfig:
     """
     Load component config from a file.
     """
@@ -46,7 +61,9 @@ def load_config(path: Path) -> ComponentConfig:
     module = get_module(path.parent)
     name = path.stem
 
-    checker = ConfigChecker(module=module, name=name, component_config=None)
+    checker = ConfigChecker(
+        module=module, name=name, component_config=None, project_config=ProjectConfig()
+    )
     with open(path) as f:
         checker.visit(ast.parse(f.read(), str(path)))
     return checker.parsed_config
@@ -111,13 +128,12 @@ def find_modules(*paths: Path) -> Iterable[Module]:
             yield check_file(path)
 
 
-def find_project_root(path: Path) -> Path:
+def find_root_module(path: Path) -> Path:
+    """
+    Find the top-level module, given a path to a file or directory
+    """
 
-    root_markers = {"pyproject.toml", "setup.cfg", ".git"}
-    if path.is_dir() and any(child.name in root_markers for child in path.iterdir()):
+    if not (path.parent / "__init__.py").exists():
         return path
 
-    if path.parent == path:
-        raise RuntimeError("Unable to find project root")
-
-    return find_project_root(path.parent)
+    return find_root_module(path.parent)

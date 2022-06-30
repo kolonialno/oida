@@ -296,7 +296,7 @@ python-versions = ">=3.6"
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -323,7 +323,7 @@ typing-extensions = ">=3.7.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "39c401b1f42985316ac6e3dfb65a3d6c932291530f1ecdcab5ffbc8b8003fca4"
+content-hash = "4d0f93e508c3f2ebd82ef420cf9808446146d6491b8cfe3627aaf79faebf6d85"
 
 [metadata.files]
 atomicwrites = [

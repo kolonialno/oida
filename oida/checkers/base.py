@@ -2,7 +2,7 @@ import ast
 import enum
 from typing import ClassVar, NamedTuple
 
-from ..config import ComponentConfig
+from ..config import ComponentConfig, ProjectConfig
 
 
 class Code(int, enum.Enum):
@@ -24,11 +24,16 @@ class Checker(ast.NodeVisitor):
     slug: ClassVar[str]
 
     def __init__(
-        self, module: str | None, name: str, component_config: ComponentConfig | None
+        self,
+        module: str | None,
+        name: str,
+        component_config: ComponentConfig | None,
+        project_config: ProjectConfig,
     ) -> None:
         self.module = module
         self.name = name
         self.component_config = component_config
+        self.project_config = project_config
         self.violations: list[Violation] = []
 
     def report_violation(self, node: ast.AST, code: Code, message: str) -> None:

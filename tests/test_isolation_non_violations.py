@@ -218,3 +218,23 @@ def test_isloation_third_party_simple_import(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    ignored_modules = ['project.*.*.tests']
+    """
+)
+@pytest.mark.module(
+    """\
+    from project.other.app.services import service
+    service()
+    """,
+    module="project.component.app.tests",
+    name="test_foobar",
+)
+def test_ignored_paths_wildcard(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations

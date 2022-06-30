@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.10"
 libcst = "^0.4.3"
+tomli = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
@@ -33,6 +34,7 @@ markers = [
     "module(name, package, path, content): Define the module to run the checker on",
     "component_config(allowed_imports=..., allowed_foreign_keys...): Set component config",
     "project_files(file_mapping): Files to create in a temporary project directory",
+    "pyproject_toml(contents): Define a pyproject.toml file to use for the project config",
 ]
 
 [tool.isort]

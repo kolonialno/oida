@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from functools import reduce
 from typing import Any, Iterator
 
-from ..config import ComponentConfig
+from ..config import ComponentConfig, ProjectConfig
 from .base import Checker, Code
 
 
@@ -31,9 +31,13 @@ class ComponentIsolationChecker(Checker):
     slug = "component-isolation"
 
     def __init__(
-        self, module: str | None, name: str, component_config: ComponentConfig | None
+        self,
+        module: str | None,
+        name: str,
+        component_config: ComponentConfig | None,
+        project_config: ProjectConfig,
     ) -> None:
-        super().__init__(module, name, component_config)
+        super().__init__(module, name, component_config, project_config)
         self.scopes: list[dict[str, str]] = [{}]
         # This checker will collect any imports it sees, regardless of any
         # config. This is used to automatically generate component configs with
@@ -100,6 +104,12 @@ class ComponentIsolationChecker(Checker):
         self.report_violation(
             node, Code.ODA005, f'Private attribute "{full_name}" referenced'
         )
+
+    def visit_Module(self, node: ast.Module) -> None:
+        """Only check the file if the module is not ignored"""
+
+        if not self.project_config.is_ignored(self.module, self.name):
+            super().generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level > 0 or not self.module or not node.module:

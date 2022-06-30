@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Generator, Type
 
 from .checkers import get_checkers
-from .discovery import get_component_config, get_module
+from .discovery import get_component_config, get_module, get_project_config
 
 
 class Plugin:
@@ -22,11 +22,14 @@ class Plugin:
         path = Path(filename)
         self._module = get_module(path.parent)
         self._name = "" if path.name == "__init__.py" else path.stem
-        self._config = get_component_config(path.parent)
+        self._component_config = get_component_config(path.parent)
+        self._project_config = get_project_config(path.parent)
 
     def run(self) -> Generator[tuple[int, int, str, Type[Any]], None, None]:
         for checker_cls in get_checkers():
-            checker = checker_cls(self._module, self._name, self._config)
+            checker = checker_cls(
+                self._module, self._name, self._component_config, self._project_config
+            )
             checker.visit(self._tree)
             for line, col, code, message in checker.violations:
                 yield line, col, f"ODA{code:03d} {message}", type(self)

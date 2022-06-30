@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from ..checkers import Code, get_checkers
-from ..discovery import find_modules, get_component_config
+from ..discovery import find_modules, get_component_config, get_project_config
 
 
 def print_violation(
@@ -14,10 +14,14 @@ def run_linter(*paths: Path, checks: list[str]) -> bool:
     has_violations = False
     checkers = get_checkers(checks)
     for module in find_modules(*paths):
-        config = get_component_config(path=module.path.parent)
+        component_config = get_component_config(path=module.path.parent)
+        project_config = get_project_config(pathh=module.path.parent)
         for checker_cls in checkers:
             checker = checker_cls(
-                module=module.module, name=module.name, component_config=config
+                module=module.module,
+                name=module.name,
+                component_config=component_config,
+                project_config=project_config,
             )
             checker.visit(module.ast)
             if checker.violations:

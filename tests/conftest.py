@@ -5,12 +5,12 @@ from typing import Type, get_type_hints
 import pytest
 
 from oida.checkers.base import Checker, Violation
-from oida.config import ComponentConfig
+from oida.config import ComponentConfig, ProjectConfig
 from oida.module import Module
 
 
 @pytest.fixture
-def checker(request: pytest.FixtureRequest) -> Checker:
+def checker(request: pytest.FixtureRequest, project_config: ProjectConfig) -> Checker:
     """
     Run a checker on a module
 
@@ -61,7 +61,12 @@ def checker(request: pytest.FixtureRequest) -> Checker:
         checker_cls, Checker
     ), f'"{checker_cls.__name__}" is not a subclass of Checker'
 
-    checker = checker_cls(module=m.module, name=m.name, component_config=config)
+    checker = checker_cls(
+        module=m.module,
+        name=m.name,
+        component_config=config,
+        project_config=project_config,
+    )
     checker.visit(m.ast)
     return checker
 
@@ -91,3 +96,10 @@ def project_path(request: pytest.FixtureRequest, tmp_path: Path) -> Path:
             f.write(textwrap.dedent(content))
 
     return tmp_path
+
+
+@pytest.fixture
+def project_config(request: pytest.FixtureRequest) -> ProjectConfig:
+    if marker := request.node.get_closest_marker("pyproject_toml"):
+        return ProjectConfig.from_pyproject_toml(marker.args[0])
+    return ProjectConfig()

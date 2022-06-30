@@ -8,7 +8,7 @@ from libcst.helpers.common import ensure_type
 
 from .checkers import ComponentIsolationChecker
 from .config import get_rule_for_violation
-from .discovery import get_module
+from .discovery import get_module, get_project_config
 
 
 def collect_violations(project_root: Path) -> dict[Path, set[str]]:
@@ -48,7 +48,8 @@ def collect_violations_in_file(path: Path) -> set[str]:
     """
 
     module = get_module(path)
-    checker = ComponentIsolationChecker(module, path.stem, None)
+    project_config = get_project_config(path.parent)
+    checker = ComponentIsolationChecker(module, path.stem, None, project_config)
     with open(path) as f:
         checker.visit(ast.parse(f.read(), str(path)))
     return checker.referenced_imports

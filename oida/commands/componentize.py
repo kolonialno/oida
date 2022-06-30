@@ -7,7 +7,7 @@ import libcst as cst
 from libcst import matchers as m
 from libcst.metadata import QualifiedNameProvider
 
-from ..discovery import find_project_root, get_module
+from ..discovery import find_root_module, get_module
 from ..utils import run_black
 
 
@@ -17,8 +17,8 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
     imports in the project.
     """
 
-    project_root = find_project_root(old_path.resolve())
-    if find_project_root(new_path.resolve()) != project_root:
+    root_module = find_root_module(old_path.resolve())
+    if find_root_module(new_path.resolve()) != root_module:
         sys.exit("Cannot move app to a different project")
 
     print("Creating target directory")
@@ -33,7 +33,7 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
 
     print("Ensuring all __init__.py files exist")
     path = new_path.resolve()
-    while path != project_root:
+    while path.parent != root_module:
         init_py_file_path = path / "__init__.py"
         init_py_file_path.touch(exist_ok=True)
         path = path.parent
@@ -47,18 +47,13 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
     update_or_create_app_config(old_path, new_path)
 
     print("Updating imports from moved app (might take a while)")
-    update_imports(project_root, old_path, new_path)
+    update_imports(root_module, old_path, new_path)
 
 
-def update_imports(project_root: Path, old_path: Path, new_path: Path) -> None:
+def update_imports(root_module: Path, old_path: Path, new_path: Path) -> None:
     """
     Update imports in the given module
     """
-
-    # Locate the project source dir (one level below project root)
-    source_dir = new_path.resolve()
-    while source_dir.parent != project_root:
-        source_dir = source_dir.parent
 
     # Rewrite imports from the moved module
     old_module = get_module(old_path)
@@ -75,7 +70,7 @@ def update_imports(project_root: Path, old_path: Path, new_path: Path) -> None:
             old_module,
             "--new_name",
             new_module,
-            source_dir,
+            root_module,
         ],
         check=True,
         capture_output=True,
