@@ -6,7 +6,7 @@ black:
 
 .PHONY: mypy
 mypy:
-	mypy --show-error-codes oida tests
+	mypy
 
 .PHONY: isort
 isort:
