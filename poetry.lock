@@ -110,6 +110,17 @@ colors = ["colorama (>=0.4.3,<0.5.0)"]
 plugins = ["setuptools"]
 
 [[package]]
+name = "keepachangelog"
+version = "1.0.0"
+description = "Manipulate keep a changelog files."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+testing = ["requests", "starlette (>=0.13.0,<0.14.0)", "flask (>=1.0.0,<2.0.0)", "flask-restx (>=0.2.0,<0.3.0)", "pytest-cov (>=2.0.0,<3.0.0)"]
+
+[[package]]
 name = "libcst"
 version = "0.4.5"
 description = "A concrete syntax tree with AST-like properties for Python 3.5, 3.6, 3.7, 3.8, 3.9, and 3.10 programs."
@@ -323,7 +334,7 @@ typing-extensions = ">=3.7.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "cd77f14e3c19fe65aad422594bc3fb3ab8e6d555199c499d4aaeace1c27a2bfd"
+content-hash = "fb1aadd74929fad6aa2e6748166c07b11fd1021cafb6dad3e62ab700350def8b"
 
 [metadata.files]
 atomicwrites = [
@@ -421,6 +432,10 @@ iniconfig = [
 isort = [
     {file = "isort-5.10.1-py3-none-any.whl", hash = "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7"},
     {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
+]
+keepachangelog = [
+    {file = "keepachangelog-1.0.0-py3-none-any.whl", hash = "sha256:1b73548ce85518b73009ce71af79c617c663437268cb085071973440c0505158"},
+    {file = "keepachangelog-1.0.0.tar.gz", hash = "sha256:0d3331f6601aeccf73620319782f0e993b1147b1fcba0ee2a534e4eef4b252b4"},
 ]
 libcst = [
     {file = "libcst-0.4.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:5e123209fb81c958cace1b9a1750cf443515265bec231d52f84ed93347463a16"},
