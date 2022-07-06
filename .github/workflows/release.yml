@@ -1,0 +1,58 @@
+# Workflow to build and release a new version
+name: Release to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+      - name: Build package
+        run: poetry build
+#      - name: Publish package to PyPI
+#        run: poetry publish --username=__token__ --password="${{ secrets.PYPI_API_TOKEN }}"
+      - name: Create GitHub release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require("fs");
+            const tagName = context.ref.replace(/^refs\/tags\//, '');
+
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tagName,
+              name: `Release ${tagName}`,
+            });
+
+            if (release.status < 200 || release.status >= 300) {
+              core.setFailed(`Could not create release for tag '${tagName}'`);
+              return;
+            }
+
+            async function uploadBuild(filename) {
+              const filepath = `./dist/${filename}`;
+              const response = await github.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.data.id,
+                name: filename,
+                data: fs.readFileSync(filepath),
+              });
+              return response.status >= 200 && response.status < 300;
+            }
+
+            const results = fs.readdirSync('./dist').map(uploadBuild);
+            const allUploaded = results.reduce((previous, current) => previous && current, true);
+
+            if (!allUploaded) {
+              core.setFailed(`Count not upload release assets for tag '${tagName}'`);
+            }
