@@ -1,9 +1,22 @@
 [tool.poetry]
 name = "oida"
-version = "0.0.1"
-description = "Oda's very own linter"
+version = "0.1.0-alpha.1"
+description = "Oida is Oda's linter that enforces code style and modularization in our Django projects."
 authors = ["Oda <tech@oda.com>"]
 license = "MIT"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Framework :: Django",
+    "Framework :: Flake8",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
