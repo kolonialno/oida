@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+import sys
+
+import keepachangelog  # type: ignore
+
+
+def is_clean_head() -> bool:
+    return (
+        subprocess.check_output(
+            ["git", "branch", "--show-current"], encoding="utf-8"
+        ).strip()
+        == "main"
+        and not subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=no"]
+        ).strip()
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Create and tag a new release")
+    parser.add_argument(
+        "--version", help="Version to release. Inferred from changelog if not specified"
+    )
+
+    args = parser.parse_args()
+
+    if not is_clean_head():
+        sys.exit("You must be in the main branch with a clean HEAD")
+
+    print("Updating CHANGELOG.md")
+    version: str = keepachangelog.release("CHANGELOG.md", args.version)
+    print("Updating pyproject.toml")
+    subprocess.check_call(["poetry", "version", version])
+    print("Commiting")
+    subprocess.check_call(
+        ["git", "commit", "-m", f"Release {version}", "CHANGELOG.md", "pyproject.toml"]
+    )
+    print("Creating tag")
+    subprocess.check_call(["git", "tag", f"v{version}"])
+    print("Pushing")
+    subprocess.check_call(["git", "push", "origin", "main", f"v{version}"])
+
+
+main()
