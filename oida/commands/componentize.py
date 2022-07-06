@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -5,6 +6,8 @@ from pathlib import Path
 
 import libcst as cst
 from libcst import matchers as m
+from libcst.codemod import CodemodContext, parallel_exec_transform_with_prettyprint
+from libcst.codemod.commands.rename import RenameCommand as BaseRenameCommand
 from libcst.metadata import QualifiedNameProvider
 
 from ..discovery import find_root_module, get_module
@@ -43,11 +46,32 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
         print("Remvoing old app directory")
         old_path.unlink()
 
+    print("Updating imports from moved app (might take a while)")
+    update_imports(root_module, old_path, new_path)
+
     print("Updating app config")
     update_or_create_app_config(old_path, new_path)
 
-    print("Updating imports from moved app (might take a while)")
-    update_imports(root_module, old_path, new_path)
+    if shutil.which("isort"):
+        print("Running isort")
+        subprocess.check_call(["isort", root_module])
+    if shutil.which("black"):
+        print("Running black")
+        subprocess.check_call(["black", root_module])
+
+
+class RenameCommand(BaseRenameCommand):
+    def leave_SimpleString(
+        self, original_node: cst.SimpleString, updated_node: cst.SimpleString
+    ) -> cst.SimpleString:
+        if isinstance(updated_node.evaluated_value, str) and (
+            updated_node.evaluated_value == self.old_name
+            or updated_node.evaluated_value.startswith(f"{self.old_name}.")
+        ):
+            return updated_node.with_changes(
+                value=updated_node.value.replace(self.old_name, self.new_name)
+            )
+        return updated_node
 
 
 def update_imports(root_module: Path, old_path: Path, new_path: Path) -> None:
@@ -59,21 +83,12 @@ def update_imports(root_module: Path, old_path: Path, new_path: Path) -> None:
     old_module = get_module(old_path)
     new_module = get_module(new_path)
 
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "libcst.tool",
-            "codemod",
-            "rename.RenameCommand",
-            "--old_name",
-            old_module,
-            "--new_name",
-            new_module,
-            root_module,
-        ],
-        check=True,
-        capture_output=True,
+    context = CodemodContext()
+    codemod = RenameCommand(context, old_module, new_module)
+    files = [str(path) for path in root_module.rglob("*.py")]
+
+    parallel_exec_transform_with_prettyprint(
+        codemod, files=files, repo_root=str(root_module)
     )
 
 
