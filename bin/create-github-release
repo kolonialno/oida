@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import traceback
+from pathlib import Path
+from typing import Any, Sequence, cast
+from urllib.request import Request, urlopen
+
+import keepachangelog  # type: ignore
+
+
+class GithubClient:
+    def __init__(self, *, repo: str, base_url: str, token: str) -> None:
+        self.repo = repo
+        self.token = token
+
+    def create_release(
+        self, tag: str, name: str, is_prerelease: bool, body: str
+    ) -> int:
+        """
+        Create a release and return its ID.
+        """
+
+        data = self._request(
+            "POST",
+            f"https://api.github.com/repos/{self.repo}/releases",
+            body=json.dumps(
+                {"tag_name": tag, "name": name, "prerelease": is_prerelease}
+            ).encode("utf-8"),
+        )
+        print(data)
+        return cast(int, data["id"])
+
+    def upload_release_asset(self, release_id: int, path: Path) -> None:
+        data = path.read_bytes()
+        content_length = str(len(data))
+        content_type = "application/zip" if path.stem == ".whl" else "application/gzip"
+
+        self._request(
+            "POST",
+            f"https://uploads.github.com/repos/{self.repo}/releases/{release_id}/assets?name={path.name}",
+            headers={"content-type": content_type, "content_length": content_length},
+            body=data,
+        )
+
+    def _request(
+        self,
+        method: str,
+        url: str,
+        *,
+        body: bytes,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        """
+        Perform an HTTP request against the github API and return the decoded json.
+        """
+
+        request = Request(method=method, url=url, data=body)
+        request.add_header("Authorization", f"Bearer {self.token}")
+        request.add_header("Accept", "application/vnd.github+json")
+        for name, value in (headers or {}).items():
+            request.add_header(name, value)
+
+        with urlopen(request) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+
+def get_version() -> tuple[str, bool]:
+    version = subprocess.check_output(
+        ["poetry", "version", "--short"], encoding="utf-8"
+    ).strip()
+    is_prerelease = not re.fullmatch(r"\d+\.\d+\.\d+", version)
+    return version, is_prerelease
+
+
+def get_assets() -> list[Path]:
+    return list(Path("./dist").iterdir())
+
+
+class EnvDefault(argparse.Action):
+    def __init__(self, fallback: str, **kwargs: Any) -> None:
+        default = os.environ.get(fallback)
+        required = default is None
+        super().__init__(default=default, required=required, **kwargs)
+
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
+    ) -> None:
+        setattr(namespace, self.dest, values)
+
+
+def format_changelog(version: str) -> str:
+    versions: dict[str, dict[str, Any]] = keepachangelog.to_dict("./CHANGELOG.md")
+    if (changelog := versions.get(version)) is None:
+        return ""
+
+    content = []
+    change_types = ["added", "changed", "deprecated", "removed", "fixed", "security"]
+    for change_type in change_types:
+        if (changes := changelog.get(change_type)) is None:
+            continue
+        content.append(f"## {change_type.capitalize()}")
+        for change in changes:
+            content.append(f"- {change}")
+
+    return "\n".join(content)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Create a GitHub release and upload build artifacts"
+    )
+    parser.add_argument("--repo", action=EnvDefault, fallback="GITHUB_REPOSITORY")
+    parser.add_argument("--base-url", action=EnvDefault, fallback="GITHUB_API_URL")
+    parser.add_argument("--token", action=EnvDefault, fallback="GITHUB_TOKEN")
+    parser.add_argument("--tag", action=EnvDefault, fallback="GITHUB_REF_NAME")
+    args = parser.parse_args()
+    print(args)
+
+    client = GithubClient(repo=args.repo, base_url=args.base_url, token=args.token)
+    version, is_prerelease = get_version()
+    changelog = format_changelog(version)
+
+    assets = get_assets()
+
+    release_id = client.create_release(args.tag, version, is_prerelease, changelog)
+    for asset in assets:
+        client.upload_release_asset(release_id, asset)
+
+
+try:
+    main()
+except Exception as exc:
+    traceback.print_exception(exc)
+    sys.exit(1)
