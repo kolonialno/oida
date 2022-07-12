@@ -35,10 +35,22 @@ def test_app_isolation_public_selector_import(
         Model.objects.get()
     """
 )
-def test_app_isolation_internal_app_reference(
+def test_app_isolation_internal_app_reference_import_from(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     """Test that attribute access in function bodies are caught"""
+    assert not violations
+
+
+@pytest.mark.module(
+    """\
+    import project.component.services.private as private
+    private.fn()
+    """
+)
+def test_app_isolation_internal_app_reference_import(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
     assert not violations
 
 
