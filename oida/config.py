@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from itertools import zip_longest
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -25,8 +26,8 @@ class ProjectConfig:
 
         for ignore in self.ignored_modules:
             if all(
-                name == "*" or len(path) < i or name == path[i]
-                for i, name in enumerate(ignore.split("."))
+                ignore_part == "*" or path_part == ignore_part or ignore_part is None
+                for path_part, ignore_part in zip_longest(path, ignore.split("."))
             ):
                 return True
 

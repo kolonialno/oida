@@ -11,6 +11,7 @@ class Code(int, enum.Enum):
     ODA003 = 3  # Invalid ALLOWED_IMPORTS statement in config
     ODA004 = 4  # Invalid ALLOWED_FOREIGN_KEYS statement in config
     ODA005 = 5  # Private attribute referenced
+    ODA006 = 6  # Related field to different app
 
 
 class Violation(NamedTuple):

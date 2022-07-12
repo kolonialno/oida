@@ -4,10 +4,12 @@ from .base import Checker, Code, Violation
 from .components import ComponentIsolationChecker
 from .config import ConfigChecker
 from .imports import RelativeImportsChecker
+from .models import ComponentModelIsolationChecker
 
 __all__ = [
     "Code",
     "ComponentIsolationChecker",
+    "ComponentModelIsolationChecker",
     "ConfigChecker",
     "RelativeImportsChecker",
     "Violation",
@@ -15,6 +17,7 @@ __all__ = [
 
 ALL_CHECKERS = (
     ComponentIsolationChecker,
+    ComponentModelIsolationChecker,
     ConfigChecker,
     RelativeImportsChecker,
 )
