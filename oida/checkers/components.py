@@ -141,11 +141,18 @@ class ComponentIsolationChecker(Checker):
             return
 
         root_module_name, *_ = self.module.split(".", 2)
+        module_app = ".".join(self.module.split(".")[:2])
 
         for name in node.names:
             # Ignore third party imports
             top_name, *_ = name.name.split(".", 1)
             if top_name != root_module_name:
+                continue
+
+            import_app = ".".join(name.name.split(".")[:2])
+
+            # Ignore imports within the same sub-service
+            if self.is_same_app(module_app, import_app):
                 continue
 
             if name.asname:
