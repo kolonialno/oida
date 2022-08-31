@@ -13,8 +13,10 @@
 
 ## Installation
 
-TODO
+Oida requires Python 3.10 or newer and can be installed from
+[PyPI](https://pypi.org/project/oida):
 
+`pip install oida`
 
 ## Usage
 
