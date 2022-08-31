@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
 - The `componentize` command will now also update references in string literals
+
+### Fixed
+- Ignore module imports from the same app
 
 ## [0.1.0-alpha.1] - 2022-07-06
 
