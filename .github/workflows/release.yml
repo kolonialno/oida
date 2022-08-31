@@ -2,9 +2,8 @@
 name: Release to PyPI
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 env:
   PYTHON_VERSION: "3.10"
@@ -22,9 +21,5 @@ jobs:
         run: poetry run make
       - name: Build package
         run: poetry build
-      - name: Create GitHub release
-        run: poetry run ./bin/create-github-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #      - name: Publish package to PyPI
-#        run: poetry publish --username=__token__ --password="${{ secrets.PYPI_API_TOKEN }}"
+#        run: poetry publish --username=__token__ --password="${{ secrets.PYPI_TOKEN }}"
