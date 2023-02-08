@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -45,6 +46,9 @@ def main() -> None:
     componentize_parser.add_argument("new_path", type=Path, help="Path to move app to")
 
     args = parser.parse_args()
+
+    # Needed to parse Python 3.10 documents
+    os.environ.setdefault("LIBCST_PARSER_TYPE", "native")
 
     if args.command == "lint":
         if not run_linter(*args.paths, checks=args.checks):
