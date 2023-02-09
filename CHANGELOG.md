@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2] - 2023-02-09
 
+### Changed
+- Set `LIBCST_PARSER_TYPE` to `native` such that the `config` and `componentize` commands can parse Python 3.10 syntax
+
 ## [0.1.1] - 2022-08-31
 
 ## [0.1.0] - 2022-08-31
