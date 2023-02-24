@@ -3,6 +3,7 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
+from typing import Optional
 
 import libcst as cst
 from libcst import matchers as m
@@ -51,6 +52,9 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
 
     print("Updating app config")
     update_or_create_app_config(old_path, new_path)
+
+    print("Updating celery task naming")
+    update_celery_task_names(root_module, old_path, new_path)
 
     if shutil.which("isort"):
         print("Running isort")
@@ -185,3 +189,31 @@ def update_or_create_app_config(old_path: Path, new_path: Path) -> None:
             AppConfigUpdater(class_name, new_module, default_app_label)
         )
         apps_py_path.write_text(run_black(updated_module.code))
+
+
+class CeleryTaskNameUpdater(cst.CSTTransformer):
+    """
+    
+    """
+
+    def __init__(self, old_module: str, new_module: str) -> None:
+        print("Creating updater")
+        self.old_module = old_module
+        self.new_module = new_module
+
+    def visit_FunctionDef(self, node: cst.FunctionDef) -> Optional[bool]:
+        print(f"Visiting node: {node.name}")
+        print(f"    Decorators: {node.decorators}")
+        return True
+
+    def leave_FunctionDef(
+        self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> cst.CSTNode:
+        print(f"Leaving original node: {original_node.name}")
+        print(f"Leaving updated node: {updated_node.name}")
+        return updated_node
+
+
+def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) -> None:
+    print("Changing Celery task naming")
+    pass
