@@ -70,19 +70,53 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 default_retry_delay=60,
                 queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
             )
-            def publish_tracking_data_to_pubsub(
+            @app.some.other.decorator(
+                foo="bar",
+            )
+            def some_function(
+                topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
+            ) -> None:
+                pass
+               
+            @app.some.other.decorator(
+                foo="bar",
+            ) 
+            @app.task(
+                name="other_dir.some_other_function",
+                max_retries=10,
+                default_retry_delay=60,
+                queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
+            )
+            def some_other_function(
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
             """,
             """\
             @app.task(
-                name="project.app.tasks.publish_tracking_data_to_pubsub",
+                name="project.app.tasks.some_function",
                 max_retries=10,
                 default_retry_delay=60,
                 queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
             )
-            def publish_tracking_data_to_pubsub(
+            @app.some.other.decorator(
+                foo="bar",
+            )
+            def some_function(
+                topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
+            ) -> None:
+                pass
+                
+            @app.some.other.decorator(
+                foo="bar",
+            )
+            @app.task(
+                name="other_dir.some_other_function",
+                max_retries=10,
+                default_retry_delay=60,
+                queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
+            )
+            def some_other_function(
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
@@ -90,17 +124,15 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
         ),
     ],
     ids=[
-        "add label, update class name and name",
+        "add task name to decorator",
     ],
 )
 def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
-    wrapper = cst.MetadataWrapper(cst.parse_module(textwrap.dedent(module)))
-    updated_module = wrapper.visit(
-        CeleryTaskNameUpdater(
+    source_tree = cst.parse_module(textwrap.dedent(module))
+    transformer = CeleryTaskNameUpdater(
             old_module="project.app.tasks",
             new_module="project.component.app.tasks",
         )
-    )
-
+    updated_module = source_tree.visit(transformer)
     expected_module = cst.parse_module(textwrap.dedent(expected_output))
     assert updated_module.deep_equals(expected_module)
