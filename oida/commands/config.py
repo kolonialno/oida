@@ -11,9 +11,9 @@ def generate_config(project_root: Path, excluded_path: Path | None = None) -> No
     Auto-generate config files for the given component.
     """
 
-    all_volations = collect_violations(project_root, excluded_path)
+    all_violations = collect_violations(project_root, excluded_path)
 
-    for component_path, violations in all_volations.items():
+    for component_path, violations in all_violations.items():
         config_path = component_path / "confcomponent.py"
         if not config_path.exists():
             if not violations:

@@ -65,7 +65,7 @@ def collect_violations_in_file(path: Path) -> set[str]:
 
 def update_component_config(node: cst.Module, allowed_imports: set[str]) -> cst.Module:
     """
-    Update a compontent config. Returns a modified copy of the provided cst.
+    Update a component config. Returns a modified copy of the provided cst.
     """
 
     new_body: list[cst.SimpleStatementLine | cst.BaseCompoundStatement] = []

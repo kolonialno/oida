@@ -61,7 +61,6 @@ def test_override_file_with_marker(project_path: Path) -> None:
 )
 def test_collect_violations(project_path: Path) -> None:
     violations = collect_violations(project_path / "project")
-    print(violations)
     assert violations == {
         (project_path / "project" / "component"): {
             "project.other.app.services.private",
