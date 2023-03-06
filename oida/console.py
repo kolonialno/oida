@@ -37,6 +37,9 @@ def main() -> None:
     config_parser.add_argument(
         "project_root", type=Path, help="Path to project root directory"
     )
+    config_parser.add_argument(
+        "excluded_path", type=Path, help="Path to be excluded from violations"
+    )
 
     componentize_parser = subparsers.add_parser(
         "componentize",
@@ -54,7 +57,7 @@ def main() -> None:
         if not run_linter(*args.paths, checks=args.checks):
             sys.exit(1)
     elif args.command == "config":
-        generate_config(args.project_root)
+        generate_config(args.project_root, args.excluded_path)
     elif args.command == "componentize":
         componentize_app(args.old_path, args.new_path)
     else:

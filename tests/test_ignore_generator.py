@@ -74,6 +74,35 @@ def test_collect_violations(project_path: Path) -> None:
     }
 
 
+@pytest.mark.project_files(
+    {
+        "project/other/__init__.py": "",
+        "project/other/app/__init__.py": "",
+        "project/other/app/services.py": """
+            from project.component.app.services import private
+            private()
+        """,
+        "project/other/app/tests/__init__.py": "",
+        "project/other/app/tests/test_methods.py": """
+            from project.component.app.tests.utils import create_util
+            create_util()
+        """,
+    }
+)
+def test_collect_violations_excluded_path(project_path: Path) -> None:
+    violations = collect_violations(project_path / "project", Path("tests"))
+    assert violations == {
+        (project_path / "project" / "component"): {
+            "project.other.app.services.private",
+            "project.other.app.services.also_private",
+            "project.other.app.selectors.private",
+        },
+        (project_path / "project" / "other"): {
+            "project.component.app.services.private",
+        },
+    }
+
+
 @pytest.mark.parametrize(
     "current,violations,expected",
     [

@@ -11,7 +11,9 @@ from .config import get_rule_for_violation
 from .discovery import get_module, get_project_config
 
 
-def collect_violations(project_root: Path) -> dict[Path, set[str]]:
+def collect_violations(
+    project_root: Path, excluded_path: Path | None = None
+) -> dict[Path, set[str]]:
     """
     Collect violations in components. Returns a dictionary mapping from
     component path to a set of violations.
@@ -21,12 +23,14 @@ def collect_violations(project_root: Path) -> dict[Path, set[str]]:
 
     for path in project_root.iterdir():
         if path.is_dir() and (path / "__init__.py").exists():
-            violations[path] = collect_violations_in_dir(path)
+            violations[path] = collect_violations_in_dir(path, excluded_path)
 
     return violations
 
 
-def collect_violations_in_dir(path: Path) -> set[str]:
+def collect_violations_in_dir(
+    path: Path, excluded_path: Path | None = None
+) -> set[str]:
     """
     Recursively collect all violations in a directory.
     """
@@ -34,9 +38,13 @@ def collect_violations_in_dir(path: Path) -> set[str]:
     violations: set[str] = set()
     for child in path.iterdir():
         if child.is_dir():
+            if excluded_path and excluded_path.name == child.name:
+                continue
             if (child / "__init__.py").exists():
-                violations |= collect_violations_in_dir(child)
+                violations |= collect_violations_in_dir(child, excluded_path)
         elif child.suffix == ".py":
+            if excluded_path and child.parent.name == excluded_path.name:
+                continue
             violations |= collect_violations_in_file(child)
 
     return violations
