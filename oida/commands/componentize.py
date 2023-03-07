@@ -208,7 +208,10 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
 
     def visit_Decorator(self, node: cst.Decorator) -> Optional[bool]:
         # Determine if the decorator is the @app.task decorator
-        if m.matches(node, m.Decorator(m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task"))))):
+        if m.matches(
+            node,
+            m.Decorator(m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))),
+        ):
             self.in_app += 1
         return super().visit_Decorator(node)
 
@@ -216,35 +219,78 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
         self, original_node: cst.Decorator, updated_node: cst.Decorator
     ) -> cst.CSTNode:
         # Determine if the decorator is the @app.task decorator
-        if m.matches(original_node, m.Decorator(m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task"))))):
+        if m.matches(
+            original_node,
+            m.Decorator(m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))),
+        ):
             self.in_app -= 1
         return updated_node
-    
+
     def leave_Call(
         self, original_node: cst.Call, updated_node: cst.Call
     ) -> cst.CSTNode:
         # self.in_app > 0 if we are in an @app.task decorator
         if self.in_app > 0:
             # Test if the name of the task is not explicitly set
-            if not m.matches(original_node, m.Call(args=[m.ZeroOrMore(), m.Arg(keyword=m.Name("name")), m.ZeroOrMore()])):
+            if not m.matches(
+                original_node,
+                m.Call(
+                    args=[m.ZeroOrMore(), m.Arg(keyword=m.Name("name")), m.ZeroOrMore()]
+                ),
+            ):
                 arguments = original_node.args
                 # The implicit name of the task is the path to the old module concatenated with the function name.
-                task_name =  self.old_module + "." + self.function_name
-                arguments = (cst.Arg(keyword=cst.Name("name"), value=task_name),) + arguments
+                task_name = '"' + self.old_module + "." + self.function_name + '"'
+                arguments = (
+                    cst.Arg(
+                        keyword=cst.Name("name"),
+                        value=cst.SimpleString(value=task_name),
+                        equal=cst.AssignEqual(
+                            whitespace_before=cst.SimpleWhitespace(value=""),
+                            whitespace_after=cst.SimpleWhitespace(value=""),
+                        ),
+                        comma=cst.Comma(
+                            whitespace_before=cst.SimpleWhitespace(value=""),
+                            whitespace_after=cst.ParenthesizedWhitespace(
+                                first_line=cst.TrailingWhitespace(
+                                    whitespace=cst.SimpleWhitespace(value=""),
+                                    comment=None,
+                                    newline=cst.Newline(value=None),
+                                ),
+                                empty_lines=[],
+                                indent=True,
+                                last_line=cst.SimpleWhitespace(value="    ")
+                            )
+                        )
+                    ),
+                ) + arguments
                 new_node = updated_node.with_changes(args=arguments)
                 return new_node
         return updated_node
-    
+
     def visit_FunctionDef(self, node: cst.FunctionDef) -> Optional[bool]:
-        if m.matches(node, m.FunctionDef(decorators=[m.ZeroOrMore(), m.Decorator(m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))), m.ZeroOrMore()])):
+        if m.matches(
+            node,
+            m.FunctionDef(
+                decorators=[
+                    m.ZeroOrMore(),
+                    m.Decorator(
+                        m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))
+                    ),
+                    m.ZeroOrMore(),
+                ]
+            ),
+        ):
             # We need the name of the function to recreate the implicit task name.
             self.function_name = node.name.value
         return super().visit_FunctionDef(node)
-    
-    def leave_FunctionDef(self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef) -> cst.CSTNode:
+
+    def leave_FunctionDef(
+        self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> cst.CSTNode:
         self.function_name = None
         return updated_node
-    
+
 
 def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) -> None:
     print("Changing Celery task naming")

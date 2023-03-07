@@ -80,7 +80,7 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                
             @app.some.other.decorator(
                 foo="bar",
-            ) 
+            )
             @app.task(
                 name="other_dir.some_other_function",
                 max_retries=10,
@@ -135,4 +135,8 @@ def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
         )
     updated_module = source_tree.visit(transformer)
     expected_module = cst.parse_module(textwrap.dedent(expected_output))
+    print("\n\n----------------------------------------- EXPECTED")
+    print(f"{expected_module}")
+    print("----------------------------------------- UPDATED")
+    print(f"{updated_module}")
     assert updated_module.deep_equals(expected_module)
