@@ -77,7 +77,7 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
-               
+            
             @app.some.other.decorator(
                 foo="bar",
             )
@@ -106,7 +106,7 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
-                
+            
             @app.some.other.decorator(
                 foo="bar",
             )
@@ -130,13 +130,9 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
 def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
     source_tree = cst.parse_module(textwrap.dedent(module))
     transformer = CeleryTaskNameUpdater(
-            old_module="project.app.tasks",
-            new_module="project.component.app.tasks",
-        )
+        old_module="project.app.tasks",
+        new_module="project.component.app.tasks",
+    )
     updated_module = source_tree.visit(transformer)
     expected_module = cst.parse_module(textwrap.dedent(expected_output))
-    print("\n\n----------------------------------------- EXPECTED")
-    print(f"{expected_module}")
-    print("----------------------------------------- UPDATED")
-    print(f"{updated_module}")
     assert updated_module.deep_equals(expected_module)

@@ -3,10 +3,10 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import libcst as cst
-from libcst import matchers as m
+from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel, matchers as m
 from libcst.codemod import CodemodContext, parallel_exec_transform_with_prettyprint
 from libcst.codemod.commands.rename import RenameCommand as BaseRenameCommand
 from libcst.metadata import QualifiedNameProvider
@@ -217,7 +217,7 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
 
     def leave_Decorator(
         self, original_node: cst.Decorator, updated_node: cst.Decorator
-    ) -> cst.CSTNode:
+    ) -> Union[Decorator, FlattenSentinel[Decorator], RemovalSentinel]:
         # Determine if the decorator is the @app.task decorator
         if m.matches(
             original_node,
@@ -228,7 +228,7 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
 
     def leave_Call(
         self, original_node: cst.Call, updated_node: cst.Call
-    ) -> cst.CSTNode:
+    ) -> cst.BaseExpression:
         # self.in_app > 0 if we are in an @app.task decorator
         if self.in_app > 0:
             # Test if the name of the task is not explicitly set
@@ -240,8 +240,9 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
             ):
                 arguments = original_node.args
                 # The implicit name of the task is the path to the old module concatenated with the function name.
-                task_name = '"' + self.old_module + "." + self.function_name + '"'
-                arguments = (
+                task_name = f'"{self.old_module}.{self.function_name}"'
+               
+                arguments = (   # type: ignore
                     cst.Arg(
                         keyword=cst.Name("name"),
                         value=cst.SimpleString(value=task_name),
@@ -259,9 +260,9 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
                                 ),
                                 empty_lines=[],
                                 indent=True,
-                                last_line=cst.SimpleWhitespace(value="    ")
-                            )
-                        )
+                                last_line=cst.SimpleWhitespace(value="    "),
+                            ),
+                        ),
                     ),
                 ) + arguments
                 new_node = updated_node.with_changes(args=arguments)
@@ -287,7 +288,7 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
-    ) -> cst.CSTNode:
+    ) -> Union[BaseStatement, FlattenSentinel[BaseStatement], RemovalSentinel]:
         self.function_name = None
         return updated_node
 
