@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Optional, Union
 
 import libcst as cst
-from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel, matchers as m
+from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel
+from libcst import matchers as m
 from libcst.codemod import CodemodContext, parallel_exec_transform_with_prettyprint
 from libcst.codemod.commands.rename import RenameCommand as BaseRenameCommand
 from libcst.metadata import QualifiedNameProvider
@@ -241,8 +242,8 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
                 arguments = original_node.args
                 # The implicit name of the task is the path to the old module concatenated with the function name.
                 task_name = f'"{self.old_module}.{self.function_name}"'
-               
-                arguments = (   # type: ignore
+
+                arguments = (  # type: ignore
                     cst.Arg(
                         keyword=cst.Name("name"),
                         value=cst.SimpleString(value=task_name),
