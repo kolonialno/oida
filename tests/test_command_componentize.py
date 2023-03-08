@@ -77,7 +77,7 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
-            
+
             @app.some.other.decorator(
                 foo="bar",
             )
@@ -106,7 +106,7 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
-            
+
             @app.some.other.decorator(
                 foo="bar",
             )

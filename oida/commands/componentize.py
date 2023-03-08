@@ -8,7 +8,7 @@ from typing import Optional, Union
 import libcst as cst
 from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel
 from libcst import matchers as m
-from libcst.codemod import CodemodContext, parallel_exec_transform_with_prettyprint
+from libcst.codemod import CodemodContext, ContextAwareTransformer, parallel_exec_transform_with_prettyprint
 from libcst.codemod.commands.rename import RenameCommand as BaseRenameCommand
 from libcst.metadata import QualifiedNameProvider
 
@@ -24,6 +24,8 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
 
     root_module = find_root_module(old_path.resolve())
     if find_root_module(new_path.resolve()) != root_module:
+        print(f"root module of old path: {root_module}")
+        print(f"root module of new path: {find_root_module(new_path.resolve())}")
         sys.exit("Cannot move app to a different project")
 
     print("Creating target directory")
@@ -192,7 +194,7 @@ def update_or_create_app_config(old_path: Path, new_path: Path) -> None:
         apps_py_path.write_text(run_black(updated_module.code))
 
 
-class CeleryTaskNameUpdater(cst.CSTTransformer):
+class CeleryTaskNameUpdater(ContextAwareTransformer):
     """
     This updater searches for Celery tasks defined with the @app.task decorator, where
     the name of the task is implicitly set. This name includes the folder structure of the Django app.
@@ -201,11 +203,16 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
     It also checks whether the name has already been explicitly set, if so the name is NOT changed.
     """
 
-    def __init__(self, old_module: str, new_module: str) -> None:
+    def __init__(self, context: CodemodContext, old_module: str, new_module: str) -> None:
+        super().__init__(context=context)
         self.old_module = old_module
         self.new_module = new_module
         self.in_app: int = 0
         self.function_name: str | None = None
+        print(f"    module name: {context.full_module_name}")
+
+    def transform_module_impl(self, tree: cst.Module) -> cst.Module:
+        return tree
 
     def visit_Decorator(self, node: cst.Decorator) -> Optional[bool]:
         # Determine if the decorator is the @app.task decorator
@@ -296,4 +303,16 @@ class CeleryTaskNameUpdater(cst.CSTTransformer):
 
 def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) -> None:
     print("Changing Celery task naming")
+    old_module = get_module(old_path)
+    new_module = get_module(new_path)
+    print(f"    old path: {old_path}")
+    print(f"    new path: {new_path}")
+
+    files = [str(path) for path in root_module.rglob("*.py")]
+    context = CodemodContext()
+    codemod = CeleryTaskNameUpdater(context, old_module, new_module)
+
+    parallel_exec_transform_with_prettyprint(
+        codemod, files=files, repo_root=str(root_module)
+    )
     pass
