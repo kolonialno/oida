@@ -8,7 +8,11 @@ from typing import Optional, Union
 import libcst as cst
 from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel
 from libcst import matchers as m
-from libcst.codemod import CodemodContext, ContextAwareTransformer, parallel_exec_transform_with_prettyprint
+from libcst.codemod import (
+    CodemodContext,
+    ContextAwareTransformer,
+    parallel_exec_transform_with_prettyprint,
+)
 from libcst.codemod.commands.rename import RenameCommand as BaseRenameCommand
 from libcst.metadata import QualifiedNameProvider
 
@@ -203,7 +207,9 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
     It also checks whether the name has already been explicitly set, if so the name is NOT changed.
     """
 
-    def __init__(self, context: CodemodContext, old_module: str, new_module: str) -> None:
+    def __init__(
+        self, context: CodemodContext, old_module: str, new_module: str
+    ) -> None:
         super().__init__(context=context)
         self.old_module = old_module
         self.new_module = new_module

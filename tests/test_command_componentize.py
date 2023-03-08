@@ -4,7 +4,9 @@ import libcst as cst
 import pytest
 
 from oida.commands.componentize import AppConfigUpdater, CeleryTaskNameUpdater
-
+from libcst.codemod import (
+    CodemodContext,
+)
 
 @pytest.mark.parametrize(
     "module,expected_output",
@@ -129,7 +131,9 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
 )
 def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
     source_tree = cst.parse_module(textwrap.dedent(module))
+    context = CodemodContext()
     transformer = CeleryTaskNameUpdater(
+        context=context,
         old_module="project.app.tasks",
         new_module="project.component.app.tasks",
     )
