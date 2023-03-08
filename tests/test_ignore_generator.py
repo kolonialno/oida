@@ -89,6 +89,7 @@ def test_collect_violations(project_path: Path) -> None:
     }
 )
 def test_collect_violations_excluded_path(project_path: Path) -> None:
+    # Excluded path is a single folder
     violations = collect_violations(project_path / "project", Path("tests"))
     assert violations == {
         (project_path / "project" / "component"): {
@@ -98,6 +99,33 @@ def test_collect_violations_excluded_path(project_path: Path) -> None:
         },
         (project_path / "project" / "other"): {
             "project.component.app.services.private",
+        },
+    }
+
+    # Excluded path contains multiple folders
+    violations = collect_violations(project_path / "project", Path("other/app/tests"))
+    assert violations == {
+        (project_path / "project" / "component"): {
+            "project.other.app.services.private",
+            "project.other.app.services.also_private",
+            "project.other.app.selectors.private",
+        },
+        (project_path / "project" / "other"): {
+            "project.component.app.services.private",
+        },
+    }
+
+    # Excluded path doesn't match, violation is listed
+    violations = collect_violations(project_path / "project", Path("other2/app/tests"))
+    assert violations == {
+        (project_path / "project" / "component"): {
+            "project.other.app.services.private",
+            "project.other.app.services.also_private",
+            "project.other.app.selectors.private",
+        },
+        (project_path / "project" / "other"): {
+            "project.component.app.services.private",
+            "project.component.app.tests.utils.create_util",
         },
     }
 

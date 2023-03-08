@@ -37,14 +37,14 @@ def collect_violations_in_dir(
 
     violations: set[str] = set()
     for child in path.iterdir():
+        # Skip collecting violations if match with the excluded path
+        if excluded_path and child.match(excluded_path.as_posix()):
+            continue
+
         if child.is_dir():
-            if excluded_path and excluded_path.name == child.name:
-                continue
             if (child / "__init__.py").exists():
                 violations |= collect_violations_in_dir(child, excluded_path)
         elif child.suffix == ".py":
-            if excluded_path and child.parent.name == excluded_path.name:
-                continue
             violations |= collect_violations_in_file(child)
 
     return violations
