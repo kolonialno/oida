@@ -2,11 +2,10 @@ import textwrap
 
 import libcst as cst
 import pytest
+from libcst.codemod import CodemodContext
 
 from oida.commands.componentize import AppConfigUpdater, CeleryTaskNameUpdater
-from libcst.codemod import (
-    CodemodContext,
-)
+
 
 @pytest.mark.parametrize(
     "module,expected_output",
