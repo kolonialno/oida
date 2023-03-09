@@ -215,9 +215,26 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
         self.new_module = new_module
         self.in_app: int = 0
         self.function_name: str | None = None
+        print(f"    old module:  {old_module}")
+        print(f"    new module:  {new_module}")
         print(f"    module name: {context.full_module_name}")
 
     def transform_module_impl(self, tree: cst.Module) -> cst.Module:
+        if self.context.full_module_name is not None:
+            current_module_name_list = self.context.full_module_name.split(".")
+            new_module_name_list = self.new_module.split(".")
+            if (
+                len(current_module_name_list) >= 2
+                and len(new_module_name_list) >= 2
+                and current_module_name_list[:2] == new_module_name_list[-2:]
+            ):
+                print(
+                    f"Transforming: {current_module_name_list[:2]} - {new_module_name_list[-2:]}"
+                )
+                return tree.visit(self)
+            print(
+                f"Not Transforming: {current_module_name_list[:2]} - {new_module_name_list[-2:]}"
+            )
         return tree
 
     def visit_Decorator(self, node: cst.Decorator) -> Optional[bool]:
@@ -255,7 +272,6 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
                 arguments = original_node.args
                 # The implicit name of the task is the path to the old module concatenated with the function name.
                 task_name = f'"{self.old_module}.{self.function_name}"'
-
                 arguments = (  # type: ignore
                     cst.Arg(
                         keyword=cst.Name("name"),
