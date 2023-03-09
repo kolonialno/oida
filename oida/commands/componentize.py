@@ -233,7 +233,7 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
                 return tree.visit(self)
         return tree
 
-    def visit_Decorator(self, node: cst.Decorator) -> Optional[bool]:
+    def visit_Decorator(self, node: cst.Decorator) -> bool | None:
         # Determine if the decorator is the @app.task decorator
         if m.matches(
             node,
