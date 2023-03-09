@@ -244,7 +244,7 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
 
     def leave_Decorator(
         self, original_node: cst.Decorator, updated_node: cst.Decorator
-    ) -> Union[Decorator, FlattenSentinel[Decorator], RemovalSentinel]:
+    ) -> Decorator | FlattenSentinel[Decorator] | RemovalSentinel:
         # Determine if the decorator is the @app.task decorator
         if m.matches(
             original_node,
