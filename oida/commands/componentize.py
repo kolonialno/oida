@@ -215,26 +215,23 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
         self.new_module = new_module
         self.in_app: int = 0
         self.function_name: str | None = None
-        print(f"    old module:  {old_module}")
-        print(f"    new module:  {new_module}")
-        print(f"    module name: {context.full_module_name}")
 
     def transform_module_impl(self, tree: cst.Module) -> cst.Module:
         if self.context.full_module_name is not None:
             current_module_name_list = self.context.full_module_name.split(".")
             new_module_name_list = self.new_module.split(".")
+            # The full module name is in the form: product_availability.core.services.data.supply
+            # while the module we are changing is of the form: tienda.product_availability.core
+            # We, therefore, need to check if the last two (string) components of the name of the
+            # new module are equal to the first two (string) components of the name of the module
+            # currently being processed. If we do not do this test - all tasks in the project
+            # (e.g. tienda) will be prepended with the component name, which is wrong.
             if (
                 len(current_module_name_list) >= 2
                 and len(new_module_name_list) >= 2
                 and current_module_name_list[:2] == new_module_name_list[-2:]
             ):
-                print(
-                    f"Transforming: {current_module_name_list[:2]} - {new_module_name_list[-2:]}"
-                )
                 return tree.visit(self)
-            print(
-                f"Not Transforming: {current_module_name_list[:2]} - {new_module_name_list[-2:]}"
-            )
         return tree
 
     def visit_Decorator(self, node: cst.Decorator) -> Optional[bool]:
@@ -276,6 +273,8 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
                     cst.Arg(
                         keyword=cst.Name("name"),
                         value=cst.SimpleString(value=task_name),
+                        # Equal and comma are not strictly necessary - the code would be functional without these.
+                        # They are needed however to comply with coding conventions and pass the unit test.
                         equal=cst.AssignEqual(
                             whitespace_before=cst.SimpleWhitespace(value=""),
                             whitespace_after=cst.SimpleWhitespace(value=""),
@@ -324,11 +323,8 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
 
 
 def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) -> None:
-    print("Changing Celery task naming")
     old_module = get_module(old_path)
     new_module = get_module(new_path)
-    print(f"    old path: {old_path}")
-    print(f"    new path: {new_path}")
 
     files = [str(path) for path in root_module.rglob("*.py")]
     context = CodemodContext()
@@ -337,4 +333,3 @@ def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) 
     parallel_exec_transform_with_prettyprint(
         codemod, files=files, repo_root=str(root_module)
     )
-    pass
