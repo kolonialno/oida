@@ -3,7 +3,6 @@ import subprocess
 import sys
 import textwrap
 from pathlib import Path
-from typing import Optional, Union
 
 import libcst as cst
 from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel
