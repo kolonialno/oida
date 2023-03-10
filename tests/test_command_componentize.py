@@ -5,6 +5,7 @@ import pytest
 from libcst.codemod import CodemodContext
 
 from oida.commands.componentize import AppConfigUpdater, CeleryTaskNameUpdater
+from oida.utils import run_black
 
 
 @pytest.mark.parametrize(
@@ -136,6 +137,6 @@ def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
         old_module="project.app.tasks",
         new_module="project.component.app.tasks",
     )
-    updated_module = source_tree.visit(transformer)
-    expected_module = cst.parse_module(textwrap.dedent(expected_output))
-    assert updated_module.deep_equals(expected_module)
+    updated_module_code = run_black(source_tree.visit(transformer).code)
+    expected_module_code = run_black(cst.parse_module(textwrap.dedent(expected_output)).code)
+    assert updated_module_code == expected_module_code

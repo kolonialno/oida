@@ -217,8 +217,8 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
         if self.context.full_module_name is not None:
             current_module_name_list = self.context.full_module_name.split(".")
             new_module_name_list = self.new_module.split(".")
-            # The full module name is in the form: product_availability.core.services.data.supply
-            # while the module we are changing is of the form: tienda.product_availability.core
+            # The full module name is in the form: component.app.subdir.subdir.module
+            # while the module we are changing is of the form: project.component.app
             # We, therefore, need to check if the last two (string) components of the name of the
             # new module are equal to the first two (string) components of the name of the module
             # currently being processed. If we do not do this test - all tasks in the project
@@ -247,25 +247,6 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
                 cst.Arg(
                     keyword=cst.Name("name"),
                     value=cst.SimpleString(value=task_name),
-                    # Equal and comma are not strictly necessary - the code would be functional without these.
-                    # They are needed however to comply with coding conventions and pass the unit test.
-                    equal=cst.AssignEqual(
-                        whitespace_before=cst.SimpleWhitespace(value=""),
-                        whitespace_after=cst.SimpleWhitespace(value=""),
-                    ),
-                    comma=cst.Comma(
-                        whitespace_before=cst.SimpleWhitespace(value=""),
-                        whitespace_after=cst.ParenthesizedWhitespace(
-                            first_line=cst.TrailingWhitespace(
-                                whitespace=cst.SimpleWhitespace(value=""),
-                                comment=None,
-                                newline=cst.Newline(value=None),
-                            ),
-                            empty_lines=[],
-                            indent=True,
-                            last_line=cst.SimpleWhitespace(value="    "),
-                        ),
-                    ),
                 ),
             ) + arguments
             new_call = call.with_changes(args=arguments)
