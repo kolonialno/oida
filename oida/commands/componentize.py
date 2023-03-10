@@ -5,7 +5,7 @@ import textwrap
 from pathlib import Path
 
 import libcst as cst
-from libcst import BaseStatement, Decorator, FlattenSentinel, RemovalSentinel
+from libcst import BaseStatement, FlattenSentinel, RemovalSentinel
 from libcst import matchers as m
 from libcst.codemod import (
     CodemodContext,
@@ -244,7 +244,7 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
             ),
         ):
             call = decorator.decorator
-            if isinstance(call, cst.Call): 
+            if isinstance(call, cst.Call):
                 arguments = call.args
                 arguments = (  # type: ignore
                     cst.Arg(
