@@ -138,5 +138,7 @@ def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
         new_module="project.component.app.tasks",
     )
     updated_module_code = run_black(source_tree.visit(transformer).code)
-    expected_module_code = run_black(cst.parse_module(textwrap.dedent(expected_output)).code)
+    expected_module_code = run_black(
+        cst.parse_module(textwrap.dedent(expected_output)).code
+    )
     assert updated_module_code == expected_module_code

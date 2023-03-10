@@ -230,8 +230,10 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
             ):
                 return tree.visit(self)
         return tree
-    
-    def update_decorator(self, decorator: cst.Decorator, task_name: str) -> cst.Decorator:
+
+    def update_decorator(
+        self, decorator: cst.Decorator, task_name: str
+    ) -> cst.Decorator:
         # Test if the name of the task is not explicitly set
         if not m.matches(
             decorator,
@@ -242,27 +244,32 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
             ),
         ):
             call = decorator.decorator
-            arguments = call.args
-            arguments = (  # type: ignore
-                cst.Arg(
-                    keyword=cst.Name("name"),
-                    value=cst.SimpleString(value=task_name),
-                ),
-            ) + arguments
-            new_call = call.with_changes(args=arguments)
-            new_decorator = decorator.with_changes(decorator=new_call)
-            return new_decorator
+            if isinstance(call, cst.Call): 
+                arguments = call.args
+                arguments = (  # type: ignore
+                    cst.Arg(
+                        keyword=cst.Name("name"),
+                        value=cst.SimpleString(value=task_name),
+                    ),
+                ) + arguments
+                new_call = call.with_changes(args=arguments)
+                new_decorator = decorator.with_changes(decorator=new_call)
+                return new_decorator
         return decorator
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> BaseStatement | FlattenSentinel[BaseStatement] | RemovalSentinel:
-        celery_task_decorator = m.Decorator(m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task"))))
+        celery_task_decorator = m.Decorator(
+            m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))
+        )
         # The implicit name of the task is the path to the old module concatenated with the function name.
         task_name = f'"{self.old_module}.{original_node.name.value}"'
         decorators = [
-            self.update_decorator(decorator=decorator, task_name=task_name) if m.matches(decorator, celery_task_decorator) else decorator
-            for decorator in updated_node.decorators 
+            self.update_decorator(decorator=decorator, task_name=task_name)
+            if m.matches(decorator, celery_task_decorator)
+            else decorator
+            for decorator in updated_node.decorators
         ]
         return updated_node.with_changes(decorators=decorators)
 
