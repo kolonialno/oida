@@ -213,23 +213,6 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
         self.old_module = old_module
         self.new_module = new_module
 
-    def transform_module_impl(self, tree: cst.Module) -> cst.Module:
-        if self.context.full_module_name is not None:
-            current_module_name_list = self.context.full_module_name.split(".")
-            new_module_name_list = self.new_module.split(".")
-            # The full module name is in the form: component.app.subdir.subdir.module
-            # while the module we are changing is of the form: project.component.app
-            # We, therefore, need to check if the last two (string) components of the name of the
-            # new module are equal to the first two (string) components of the name of the module
-            # currently being processed. If we do not do this test - all tasks in the project
-            # (e.g. tienda) will be prepended with the component name, which is wrong.
-            if (
-                len(current_module_name_list) >= 2
-                and len(new_module_name_list) >= 2
-                and current_module_name_list[:2] == new_module_name_list[-2:]
-            ):
-                return tree.visit(self)
-        return tree
 
     def update_decorator(
         self, decorator: cst.Decorator, task_name: str
