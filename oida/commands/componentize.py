@@ -210,8 +210,7 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
         self, context: CodemodContext, module_name: str
     ) -> None:
         super().__init__(context=context)
-        self.old_module = old_module
-        self.new_module = new_module
+        self.module_name = module_name
 
 
     def update_decorator(
@@ -247,7 +246,7 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
             m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))
         )
         # The implicit name of the task is the path to the old module concatenated with the function name.
-        task_name = f'"{self.old_module}.{original_node.name.value}"'
+        task_name = f'"{self.module_name}.{original_node.name.value}"'
         decorators = [
             self.update_decorator(decorator=decorator, task_name=task_name)
             if m.matches(decorator, celery_task_decorator)
@@ -259,11 +258,10 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
 
 def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) -> None:
     old_module = get_module(old_path)
-    new_module = get_module(new_path)
 
     files = [str(path) for path in new_path.rglob("*.py")]
     context = CodemodContext()
-    codemod = CeleryTaskNameUpdater(context, old_module, new_module)
+    codemod = CeleryTaskNameUpdater(context, old_module)
 
     parallel_exec_transform_with_prettyprint(
         codemod, files=files, repo_root=str(root_module)
