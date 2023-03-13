@@ -5,8 +5,13 @@ import textwrap
 from pathlib import Path
 
 import libcst as cst
+from libcst import BaseStatement, FlattenSentinel, RemovalSentinel
 from libcst import matchers as m
-from libcst.codemod import CodemodContext, parallel_exec_transform_with_prettyprint
+from libcst.codemod import (
+    CodemodContext,
+    ContextAwareTransformer,
+    parallel_exec_transform_with_prettyprint,
+)
 from libcst.codemod.commands.rename import RenameCommand as BaseRenameCommand
 from libcst.metadata import QualifiedNameProvider
 
@@ -22,6 +27,8 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
 
     root_module = find_root_module(old_path.resolve())
     if find_root_module(new_path.resolve()) != root_module:
+        print(f"root module of old path: {root_module}")
+        print(f"root module of new path: {find_root_module(new_path.resolve())}")
         sys.exit("Cannot move app to a different project")
 
     print("Creating target directory")
@@ -51,6 +58,9 @@ def componentize_app(old_path: Path, new_path: Path) -> None:
 
     print("Updating app config")
     update_or_create_app_config(old_path, new_path)
+
+    print("Updating celery task naming")
+    update_celery_task_names(root_module, old_path, new_path)
 
     if shutil.which("isort"):
         print("Running isort")
@@ -185,3 +195,71 @@ def update_or_create_app_config(old_path: Path, new_path: Path) -> None:
             AppConfigUpdater(class_name, new_module, default_app_label)
         )
         apps_py_path.write_text(run_black(updated_module.code))
+
+
+class CeleryTaskNameUpdater(ContextAwareTransformer):
+    """
+    This updater searches for Celery tasks defined with the @app.task decorator, where
+    the name of the task is implicitly set. This name includes the folder structure of the Django app.
+    Because we need to keep the name the same if we move apps into components, we need to set the name
+    explicitly to the original name, i.e. without the component name.
+    It also checks whether the name has already been explicitly set, if so the name is NOT changed.
+    """
+
+    def __init__(self, context: CodemodContext, module_name: str) -> None:
+        super().__init__(context=context)
+        self.module_name = module_name
+
+    def update_decorator(
+        self, decorator: cst.Decorator, task_name: str
+    ) -> cst.Decorator:
+        # Test if the name of the task is not explicitly set
+        if not m.matches(
+            decorator,
+            m.Decorator(
+                decorator=m.Call(
+                    args=[m.ZeroOrMore(), m.Arg(keyword=m.Name("name")), m.ZeroOrMore()]
+                ),
+            ),
+        ):
+            call = decorator.decorator
+            if isinstance(call, cst.Call):
+                arguments = call.args
+                arguments = (  # type: ignore
+                    cst.Arg(
+                        keyword=cst.Name("name"),
+                        value=cst.SimpleString(value=task_name),
+                    ),
+                ) + arguments
+                new_call = call.with_changes(args=arguments)
+                new_decorator = decorator.with_changes(decorator=new_call)
+                return new_decorator
+        return decorator
+
+    def leave_FunctionDef(
+        self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> BaseStatement | FlattenSentinel[BaseStatement] | RemovalSentinel:
+        celery_task_decorator = m.Decorator(
+            m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))
+        )
+        # The implicit name of the task is the path to the old module concatenated with the function name.
+        task_name = f'"{self.module_name}.{original_node.name.value}"'
+        decorators = [
+            self.update_decorator(decorator=decorator, task_name=task_name)
+            if m.matches(decorator, celery_task_decorator)
+            else decorator
+            for decorator in updated_node.decorators
+        ]
+        return updated_node.with_changes(decorators=decorators)
+
+
+def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) -> None:
+    old_module = get_module(old_path)
+
+    files = [str(path) for path in new_path.rglob("*.py")]
+    context = CodemodContext()
+    codemod = CeleryTaskNameUpdater(context, old_module)
+
+    parallel_exec_transform_with_prettyprint(
+        codemod, files=files, repo_root=str(root_module)
+    )
