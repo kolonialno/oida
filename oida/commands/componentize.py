@@ -207,7 +207,7 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
     """
 
     def __init__(
-        self, context: CodemodContext, old_module: str, new_module: str
+        self, context: CodemodContext, module_name: str
     ) -> None:
         super().__init__(context=context)
         self.old_module = old_module
