@@ -261,7 +261,7 @@ def update_celery_task_names(root_module: Path, old_path: Path, new_path: Path) 
     old_module = get_module(old_path)
     new_module = get_module(new_path)
 
-    files = [str(path) for path in root_module.rglob("*.py")]
+    files = [str(path) for path in new_path.rglob("*.py")]
     context = CodemodContext()
     codemod = CeleryTaskNameUpdater(context, old_module, new_module)
 
