@@ -206,12 +206,9 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
     It also checks whether the name has already been explicitly set, if so the name is NOT changed.
     """
 
-    def __init__(
-        self, context: CodemodContext, module_name: str
-    ) -> None:
+    def __init__(self, context: CodemodContext, module_name: str) -> None:
         super().__init__(context=context)
         self.module_name = module_name
-
 
     def update_decorator(
         self, decorator: cst.Decorator, task_name: str

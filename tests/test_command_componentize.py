@@ -134,8 +134,7 @@ def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
     context = CodemodContext()
     transformer = CeleryTaskNameUpdater(
         context=context,
-        old_module="project.app.tasks",
-        new_module="project.component.app.tasks",
+        module_name="project.app.tasks",
     )
     updated_module_code = run_black(source_tree.visit(transformer).code)
     expected_module_code = run_black(
