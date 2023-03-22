@@ -32,4 +32,4 @@ class Plugin:
             )
             checker.visit(self._tree)
             for line, col, code, message in checker.violations:
-                yield line, col, f"ODA{code:03d} {message}", type(self)
+                yield line, col, f"ODA{code.value:03d} {message}", type(self)

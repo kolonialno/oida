@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+ - Fix crash in flake8 plugin on Python 3.11
+
 ## [0.1.3] - 2023-03-13
 
 ### Added
