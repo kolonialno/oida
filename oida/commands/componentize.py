@@ -239,14 +239,21 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
     ) -> BaseStatement | FlattenSentinel[BaseStatement] | RemovalSentinel:
-        celery_task_decorator = m.Decorator(
+
+        # Matching tasks defined with @app.task
+        celery_app_task_decorator = m.Decorator(
             m.Call(m.Attribute(value=m.Name("app"), attr=m.Name("task")))
         )
+        # Matching tasks defined with @coalesced_task
+        celery_coalesced_task_decorator = m.Decorator(m.Call(m.Name("coalesced_task")))
+
         # The implicit name of the task is the path to the old module concatenated with the function name.
         task_name = f'"{self.module_name}.{original_node.name.value}"'
         decorators = [
             self.update_decorator(decorator=decorator, task_name=task_name)
-            if m.matches(decorator, celery_task_decorator)
+            if m.matches(
+                decorator, celery_app_task_decorator | celery_coalesced_task_decorator
+            )
             else decorator
             for decorator in updated_node.decorators
         ]
