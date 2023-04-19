@@ -249,7 +249,9 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
         task_name = f'"{self.module_name}.{original_node.name.value}"'
         decorators = [
             self.update_decorator(decorator=decorator, task_name=task_name)
-            if m.matches(decorator, celery_app_task_decorator | celery_coalesced_task_decorator)
+            if m.matches(
+                decorator, celery_app_task_decorator | celery_coalesced_task_decorator
+            )
             else decorator
             for decorator in updated_node.decorators
         ]
