@@ -93,6 +93,19 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
+
+            @coalesced_task(
+                max_retries=10,
+                default_retry_delay=60,
+                queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
+            )
+            @app.some.other.decorator(
+                foo="bar",
+            )
+            def some_third_function(
+                topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
+            ) -> None:
+                pass
             """,
             """\
             @app.task(
@@ -119,6 +132,20 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
                 queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
             )
             def some_other_function(
+                topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
+            ) -> None:
+                pass
+
+            @coalesced_task(
+                name="project.app.tasks.some_third_function",
+                max_retries=10,
+                default_retry_delay=60,
+                queue=settings.TASK_QUEUE_LOW_LATENCY_TRACKING,
+            )
+            @app.some.other.decorator(
+                foo="bar",
+            )
+            def some_third_function(
                 topic: str, msg: bytes | dict, attributes: dict[str, str] | None = None
             ) -> None:
                 pass
