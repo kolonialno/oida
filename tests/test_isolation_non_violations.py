@@ -270,3 +270,43 @@ def test_ignored_paths_submodule(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
     assert not violations
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    allowed_imports = ['project.*.*.services']
+    """
+)
+@pytest.mark.module(
+    """\
+    from project.other.app.services import service
+    service()
+    """,
+    module="project.component.app.tests",
+    name="test_foobar",
+)
+def test_allowed_imports_wildcard(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    allowed_imports = ['project.*.app']
+    """
+)
+@pytest.mark.module(
+    """\
+    from project.other.app.services import service
+    service()
+    """,
+    module="project.app.tests",
+    name="test_foobar",
+)
+def test_allowed_imports_submodule(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    assert not violations
