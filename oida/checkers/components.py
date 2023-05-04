@@ -2,9 +2,9 @@ import ast
 from contextlib import contextmanager
 from functools import reduce
 from typing import Any, Iterator
-from ..utils import path_in_glob_list
 
 from ..config import ComponentConfig, ProjectConfig
+from ..utils import path_in_glob_list
 from .base import Checker, Code
 
 
@@ -71,17 +71,18 @@ class ComponentIsolationChecker(Checker):
         """Check of access to this name is allowed, not considering ignored rules"""
         return len(path) <= 4
 
+    def is_violation_globally_silenced(self, path: list[str]) -> bool:
+        """Check if a name that's a violation is ignored globally."""
+
+        return path_in_glob_list(".".join(path), self.project_config.allowed_imports)
+
     def is_violation_silenced(self, path: list[str]) -> bool:
         """Check if a name that's a violation is ignored by component config"""
-        component_allowed_imports: frozenset[str] = (
+        allowed_imports: frozenset[str] = (
             getattr(self.component_config, "allowed_imports", None) or frozenset()
         )
 
-        global_allowed_imports = frozenset(self.project_config.allowed_imports)
-
-        allowed_imports = list(component_allowed_imports | global_allowed_imports)
-
-        return path_in_glob_list(".".join(path), allowed_imports)
+        return path_in_glob_list(".".join(path), list(allowed_imports))
 
     def maybe_report_violation(self, full_name: str, node: ast.AST) -> None:
         """Check a fully qualified name"""
@@ -90,8 +91,11 @@ class ComponentIsolationChecker(Checker):
         if self.is_access_allowed(path):
             return
 
+        if self.is_violation_globally_silenced(path):
+            return
+
         # If access is not allowed we should record the reference even if the
-        # violation is silenced
+        # violation is silenced by the component config.
         self.referenced_imports.add(full_name)
 
         if self.is_violation_silenced(path):

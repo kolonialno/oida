@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field
 from typing import Iterable
+
 from .utils import path_in_glob_list
 
 if sys.version_info >= (3, 11):

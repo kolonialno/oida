@@ -1,6 +1,6 @@
 import subprocess
-from pathlib import Path
 from itertools import zip_longest
+from pathlib import Path
 
 
 def run_black(value: str, *, filename: Path | None = None) -> str:
@@ -23,7 +23,7 @@ def path_in_glob_list(path: str, glob_list: list[str]) -> bool:
     Returns True if the path is included in the provided glob list.
     """
 
-    path_list = (path or "").split(".")
+    path_list = path.split(".")
 
     for glob in glob_list:
         if all(
