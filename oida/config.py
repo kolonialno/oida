@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass, field
-from itertools import zip_longest
 from typing import Iterable
+
+from .utils import path_in_glob_list
 
 if sys.version_info >= (3, 11):
     from tomllib import loads as load_toml
@@ -14,6 +15,7 @@ else:
 @dataclass
 class ProjectConfig:
     ignored_modules: list[str] = field(default_factory=list)
+    allowed_imports: list[str] = field(default_factory=list)
 
     @classmethod
     def from_pyproject_toml(cls, pyproject_toml: str) -> ProjectConfig:
@@ -24,14 +26,7 @@ class ProjectConfig:
     def is_ignored(self, module: str | None, name: str) -> bool:
         path = (module or "").split(".") + [name]
 
-        for ignore in self.ignored_modules:
-            if all(
-                ignore_part == "*" or path_part == ignore_part or ignore_part is None
-                for path_part, ignore_part in zip_longest(path, ignore.split("."))
-            ):
-                return True
-
-        return False
+        return path_in_glob_list(".".join(path), self.ignored_modules)
 
 
 @dataclass
