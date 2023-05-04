@@ -89,6 +89,9 @@ def project_path(request: pytest.FixtureRequest, tmp_path: Path) -> Path:
     for marker in reversed(list(request.node.iter_markers("project_files"))):
         files.update(marker.args[0])
 
+    for marker in reversed(list(request.node.iter_markers("pyproject_toml"))):
+        files.update({"pyproject.toml": marker.args[0]})
+
     for name, content in files.items():
         file_path = tmp_path / name
         file_path.parent.mkdir(parents=True, exist_ok=True)

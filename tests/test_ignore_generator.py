@@ -49,13 +49,21 @@ def test_override_file_with_marker(project_path: Path) -> None:
         assert f.read() == "OVERRIDE = True"
 
 
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    allowed_imports = ["project.component.*.selectors"]
+    """
+)
 @pytest.mark.project_files(
     {
         "project/other/__init__.py": "",
         "project/other/app/__init__.py": "",
         "project/other/app/services.py": """
             from project.component.app.services import private
+            from project.component.app.selectors import public
             private()
+            public()
             """,
     }
 )
