@@ -2,6 +2,7 @@ import ast
 from contextlib import contextmanager
 from functools import reduce
 from typing import Any, Iterator
+from ..utils import path_in_glob_list
 
 from ..config import ComponentConfig, ProjectConfig
 from .base import Checker, Code
@@ -72,20 +73,15 @@ class ComponentIsolationChecker(Checker):
 
     def is_violation_silenced(self, path: list[str]) -> bool:
         """Check if a name that's a violation is ignored by component config"""
-        allowed_imports: tuple[str, ...] = (
-            getattr(self.component_config, "allowed_imports", None) or ()
+        component_allowed_imports: frozenset[str] = (
+            getattr(self.component_config, "allowed_imports", None) or frozenset()
         )
 
-        while path:
-            if ".".join(path) in allowed_imports:
-                return True
-            if ".".join(path[:-1]) + ".*" in allowed_imports:
-                return True
+        global_allowed_imports = frozenset(self.project_config.allowed_imports)
 
-            path = path[:-1]
+        allowed_imports = list(component_allowed_imports | global_allowed_imports)
 
-        # Name was not found in the list of allowed imports
-        return False
+        return path_in_glob_list(".".join(path), allowed_imports)
 
     def maybe_report_violation(self, full_name: str, node: ast.AST) -> None:
         """Check a fully qualified name"""
