@@ -207,3 +207,32 @@ def test_isolation_unused_import_violation(
         )
     ]
     assert checker.referenced_imports == {"project.other.app.selectors.select"}
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    ignored_modules = ['project.*.tests']
+    """
+)
+@pytest.mark.module(
+    """\
+    from project.other.app.services import service
+    service()
+    """,
+    module="project",
+    name="test_foobar",
+)
+def test_ignored_paths_shorter_path_than_ignore(
+    checker: ComponentIsolationChecker, violations: list[Violation]
+) -> None:
+    """Test that ignores at a deeper path are not used"""
+    assert violations == [
+        Violation(
+            line=2,
+            column=0,
+            code=Code.ODA005,
+            message='Private attribute "project.other.app.services.service" referenced',
+        )
+    ]
+    assert checker.referenced_imports == {"project.other.app.services.service"}
