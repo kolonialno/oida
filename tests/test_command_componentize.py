@@ -158,13 +158,15 @@ def testapp_config_updater(module: str, expected_output: str) -> None:
 )
 def testapp_celery_task_name_updater(module: str, expected_output: str) -> None:
     source_tree = cst.parse_module(textwrap.dedent(module))
+    wrapper = cst.metadata.MetadataWrapper(source_tree)
     context = CodemodContext()
     transformer = CeleryTaskNameUpdater(
         context=context,
         module_name="project.app.tasks",
     )
-    updated_module_code = run_black(source_tree.visit(transformer).code)
+    updated_module_code = run_black(wrapper.visit(transformer).code)
     expected_module_code = run_black(
         cst.parse_module(textwrap.dedent(expected_output)).code
     )
+    assert False
     assert updated_module_code == expected_module_code

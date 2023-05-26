@@ -206,6 +206,8 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
     It also checks whether the name has already been explicitly set, if so the name is NOT changed.
     """
 
+    METADATA_DEPENDENCIES = (QualifiedNameProvider,)
+
     def __init__(self, context: CodemodContext, module_name: str) -> None:
         super().__init__(context=context)
         self.module_name = module_name
@@ -235,6 +237,17 @@ class CeleryTaskNameUpdater(ContextAwareTransformer):
                 new_decorator = decorator.with_changes(decorator=new_call)
                 return new_decorator
         return decorator
+    
+    def leave_Decorator(
+        self, original_node: cst.Decorator, updated_node: cst.Decorator
+    ) -> cst.Decorator:
+        # print(f"Visiting decorator {original_node}")
+        count = 0
+        for qualname in self.get_metadata(QualifiedNameProvider, original_node):
+            print(f"Qualified Name: {qualname.name}")
+            count = count + 1
+        print(f"Number of qualified names: {count}")
+        return updated_node
 
     def leave_FunctionDef(
         self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
