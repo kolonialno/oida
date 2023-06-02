@@ -3,7 +3,6 @@ from pathlib import Path
 from ..checkers import Code, get_checkers
 from ..discovery import find_modules, get_component_config, get_project_config
 
-
 def print_violation(
     file: Path, line: int, column: int, code: Code, message: str
 ) -> None:
@@ -11,9 +10,13 @@ def print_violation(
 
 
 def run_linter(*paths: Path, checks: list[str]) -> bool:
+    print(f"paths: {paths}")
+    #for path in paths:
+    #    statistics = StatisticsGenerator(path=path)
     has_violations = False
     checkers = get_checkers(checks)
     for module in find_modules(*paths):
+        print(f"module > {module.path}")
         component_config = get_component_config(path=module.path.parent)
         project_config = get_project_config(path=module.path.parent)
         for checker_cls in checkers:
@@ -28,6 +31,8 @@ def run_linter(*paths: Path, checks: list[str]) -> bool:
                 has_violations = True
             for violation in checker.violations:
                 print_violation(module.path, *violation)
+        print(f"component_config > {component_config}")
+        print(f"project_config > {project_config}")
         # Clear ast from memory as we no longer need it
         del module.ast
 

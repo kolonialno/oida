@@ -1,7 +1,9 @@
 import ast
 import functools
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, List
+
+from oida.component import Component
 
 from .checkers import ConfigChecker
 from .config import ComponentConfig, ProjectConfig
@@ -137,3 +139,80 @@ def find_root_module(path: Path) -> Path:
         return path
 
     return find_root_module(path.parent)
+
+
+def find_apps(path: Path) -> Iterable[Path]:
+    """
+    Find all apps under the specified path.
+    """
+    for subpath in path.iterdir():
+        if is_app(path=subpath):
+            yield subpath
+
+
+def get_component(path: Path) -> Component | None :
+    """
+    Returns the component ath the specified path or None if
+    the path is not the component root.
+    """
+    if not is_component(path=path):
+        return None
+
+    apps = list(find_apps(path))
+
+    return Component(
+        name=path.name,
+        path=path,
+        apps=apps,
+        hasPublicAPI=_has_public_API(path=path)
+    )
+
+def find_components(path: Path) -> Iterable[Component]:
+    """
+    Find all existing components
+    """
+
+    root_module = find_root_module(path=path)
+    for subpath in root_module.iterdir():
+        if subpath.is_dir() and is_component(path=subpath):
+            yield get_component(path=subpath)
+
+
+def is_app(path: Path) -> bool:
+    if not (path / "__init__.py").exists():
+        # Apps should include a __init__.py file
+        return False
+    if (path / "management/commands").exists():
+        # The existance of the directory management/commands also suggests an app
+        return True
+    for subpath in path.iterdir():
+        if subpath.suffix == ".py":
+            if "selectors" not in str(subpath) and "services" not in str(subpath) and "__init__" not in str(subpath):
+                # We assume that only selectors.py and services.py are allowed modules in a component so we test
+                # for any other python files.
+                return True
+    return False
+
+
+def _has_public_API(path: Path) -> bool:
+    for subpath in path.iterdir():
+        if subpath.suffix == ".py":
+            if "selectors" in str(subpath) or "services" in str(subpath):
+                # We assume that only selectors.py and services.py are allowed modules in a component.
+                return True
+    return False
+
+
+def is_component(path: Path) -> bool:
+    if not (path / "__init__.py").exists():
+        # Components should include a __init__.py file
+        return False
+    if (path / "management/commands").exists():
+        # The existance of the directory management/commands also suggests an app
+        return False
+    for subpath in path.iterdir():
+        if subpath.suffix == ".py":
+            if "selectors" not in str(subpath) and "services" not in str(subpath) and "__init__" not in str(subpath):
+                # We assume that only selectors.py and services.py are allowed modules in a component.
+                return False
+    return True
