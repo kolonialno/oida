@@ -67,7 +67,7 @@ def main() -> None:
         generate_config(args.project_root)
     elif args.command == "statistics":
         statistics = generate_statistics(args.project_root)
-        print(f"{statistics}")
+        print(f"{statistics.json()}")
     elif args.command == "componentize":
         componentize_app(args.old_path, args.new_path)
     else:

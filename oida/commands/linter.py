@@ -31,8 +31,6 @@ def run_linter(*paths: Path, checks: list[str]) -> bool:
                 has_violations = True
             for violation in checker.violations:
                 print_violation(module.path, *violation)
-        print(f"component_config > {component_config}")
-        print(f"project_config > {project_config}")
         # Clear ast from memory as we no longer need it
         del module.ast
 
