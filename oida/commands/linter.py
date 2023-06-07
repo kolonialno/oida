@@ -3,6 +3,7 @@ from pathlib import Path
 from ..checkers import Code, get_checkers
 from ..discovery import find_modules, get_component_config, get_project_config
 
+
 def print_violation(
     file: Path, line: int, column: int, code: Code, message: str
 ) -> None:
@@ -11,7 +12,7 @@ def print_violation(
 
 def run_linter(*paths: Path, checks: list[str]) -> bool:
     print(f"paths: {paths}")
-    #for path in paths:
+    # for path in paths:
     #    statistics = StatisticsGenerator(path=path)
     has_violations = False
     checkers = get_checkers(checks)

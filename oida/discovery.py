@@ -1,7 +1,7 @@
 import ast
 import functools
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable
 
 from oida.component import Component
 
@@ -150,7 +150,7 @@ def find_apps(path: Path) -> Iterable[Path]:
             yield subpath
 
 
-def get_component(path: Path) -> Component | None :
+def get_component(path: Path) -> Component | None:
     """
     Returns the component ath the specified path or None if
     the path is not the component root.
@@ -161,11 +161,9 @@ def get_component(path: Path) -> Component | None :
     apps = list(find_apps(path))
 
     return Component(
-        name=path.name,
-        path=path,
-        apps=apps,
-        hasPublicAPI=_has_public_API(path=path)
+        name=path.name, path=path, apps=apps, has_public_api=_has_public_api(path=path)
     )
+
 
 def find_components(path: Path) -> Iterable[Component]:
     """
@@ -175,7 +173,9 @@ def find_components(path: Path) -> Iterable[Component]:
     root_module = find_root_module(path=path)
     for subpath in root_module.iterdir():
         if subpath.is_dir() and is_component(path=subpath):
-            yield get_component(path=subpath)
+            component = get_component(path=subpath)
+            if component is not None:
+                yield component
 
 
 def is_app(path: Path) -> bool:
@@ -187,14 +187,18 @@ def is_app(path: Path) -> bool:
         return True
     for subpath in path.iterdir():
         if subpath.suffix == ".py":
-            if "selectors" not in str(subpath) and "services" not in str(subpath) and "__init__" not in str(subpath):
+            if (
+                "selectors" not in str(subpath)
+                and "services" not in str(subpath)
+                and "__init__" not in str(subpath)
+            ):
                 # We assume that only selectors.py and services.py are allowed modules in a component so we test
                 # for any other python files.
                 return True
     return False
 
 
-def _has_public_API(path: Path) -> bool:
+def _has_public_api(path: Path) -> bool:
     for subpath in path.iterdir():
         if subpath.suffix == ".py":
             if "selectors" in str(subpath) or "services" in str(subpath):
@@ -212,7 +216,11 @@ def is_component(path: Path) -> bool:
         return False
     for subpath in path.iterdir():
         if subpath.suffix == ".py":
-            if "selectors" not in str(subpath) and "services" not in str(subpath) and "__init__" not in str(subpath):
+            if (
+                "selectors" not in str(subpath)
+                and "services" not in str(subpath)
+                and "__init__" not in str(subpath)
+            ):
                 # We assume that only selectors.py and services.py are allowed modules in a component.
                 return False
     return True
