@@ -182,7 +182,7 @@ def is_app(path: Path) -> bool:
     if not (path / "__init__.py").exists():
         # Apps should include a __init__.py file
         return False
-    
+
     # The existance of some of these files or directories suggests an app
     may_exist_in_apps = [
         "apps.py",
@@ -207,7 +207,7 @@ def is_app(path: Path) -> bool:
 def _has_public_api(path: Path) -> bool:
     for subpath in path.iterdir():
         if subpath.suffix == ".py":
-            if not "__init__" in str(subpath):
+            if "__init__" not in str(subpath):
                 # If the component contains any .py file except __init__.py,
                 # it has a public API
                 return True
@@ -218,7 +218,7 @@ def is_component(path: Path) -> bool:
     if not (path / "__init__.py").exists():
         # Components should include a __init__.py file
         return False
-    
+
     # A component should contain at least one app.
     for subpath in path.iterdir():
         if is_app(path=subpath):
