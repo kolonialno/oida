@@ -182,18 +182,24 @@ def is_app(path: Path) -> bool:
     if not (path / "__init__.py").exists():
         # Apps should include a __init__.py file
         return False
-    if (path / "management/commands").exists():
-        # The existance of the directory management/commands also suggests an app
-        return True
-    for subpath in path.iterdir():
-        if subpath.suffix == ".py":
-            if (
-                "selectors" not in str(subpath)
-                and "services" not in str(subpath)
-                and "__init__" not in str(subpath)
-            ):
-                # We assume that only selectors.py and services.py are allowed modules in a component so we test
-                # for any other python files.
+    
+    # The existance of some of these files or directories suggests an app
+    may_exist_in_apps = [
+        "apps.py",
+        "admin.py",
+        "models.py",
+        "urls.py",
+        "management",
+        "migrations",
+        "templates",
+        "static",
+    ]
+    count = 0
+    for test_path in may_exist_in_apps:
+        if (path / test_path).exists():
+            count = count + 1
+            # If more than one of these subpaths exist we assume this to be an app
+            if count > 1:
                 return True
     return False
 
@@ -201,8 +207,9 @@ def is_app(path: Path) -> bool:
 def _has_public_api(path: Path) -> bool:
     for subpath in path.iterdir():
         if subpath.suffix == ".py":
-            if "selectors" in str(subpath) or "services" in str(subpath):
-                # We assume that only selectors.py and services.py are allowed modules in a component.
+            if not "__init__" in str(subpath):
+                # If the component contains any .py file except __init__.py,
+                # it has a public API
                 return True
     return False
 
@@ -211,16 +218,9 @@ def is_component(path: Path) -> bool:
     if not (path / "__init__.py").exists():
         # Components should include a __init__.py file
         return False
-    if (path / "management/commands").exists():
-        # The existance of the directory management/commands also suggests an app
-        return False
+    
+    # A component should contain at least one app.
     for subpath in path.iterdir():
-        if subpath.suffix == ".py":
-            if (
-                "selectors" not in str(subpath)
-                and "services" not in str(subpath)
-                and "__init__" not in str(subpath)
-            ):
-                # We assume that only selectors.py and services.py are allowed modules in a component.
-                return False
-    return True
+        if is_app(path=subpath):
+            return True
+    return False
