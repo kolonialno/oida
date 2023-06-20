@@ -11,13 +11,9 @@ def print_violation(
 
 
 def run_linter(*paths: Path, checks: list[str]) -> bool:
-    print(f"paths: {paths}")
-    # for path in paths:
-    #    statistics = StatisticsGenerator(path=path)
     has_violations = False
     checkers = get_checkers(checks)
     for module in find_modules(*paths):
-        print(f"module > {module.path}")
         component_config = get_component_config(path=module.path.parent)
         project_config = get_project_config(path=module.path.parent)
         for checker_cls in checkers:
