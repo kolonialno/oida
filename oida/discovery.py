@@ -3,6 +3,8 @@ import functools
 from pathlib import Path
 from typing import Iterable
 
+from oida.component import Component
+
 from .checkers import ConfigChecker
 from .config import ComponentConfig, ProjectConfig
 from .module import Module
@@ -137,3 +139,88 @@ def find_root_module(path: Path) -> Path:
         return path
 
     return find_root_module(path.parent)
+
+
+def find_apps(path: Path) -> Iterable[Path]:
+    """
+    Find all apps under the specified path.
+    """
+    for subpath in path.iterdir():
+        if is_app(path=subpath):
+            yield subpath
+
+
+def get_component(path: Path) -> Component | None:
+    """
+    Returns the component ath the specified path or None if
+    the path is not the component root.
+    """
+    if not is_component(path=path):
+        return None
+
+    apps = list(find_apps(path))
+
+    return Component(
+        name=path.name, path=path, apps=apps, has_public_api=_has_public_api(path=path)
+    )
+
+
+def find_components(path: Path) -> Iterable[Component]:
+    """
+    Find all existing components
+    """
+
+    root_module = find_root_module(path=path)
+    for subpath in root_module.iterdir():
+        if subpath.is_dir() and is_component(path=subpath):
+            component = get_component(path=subpath)
+            if component is not None:
+                yield component
+
+
+def is_app(path: Path) -> bool:
+    if not (path / "__init__.py").exists():
+        # Apps should include a __init__.py file
+        return False
+
+    # The existance of some of these files or directories suggests an app
+    may_exist_in_apps = [
+        "apps.py",
+        "admin.py",
+        "models.py",
+        "urls.py",
+        "management",
+        "migrations",
+        "templates",
+        "static",
+    ]
+    count = 0
+    for test_path in may_exist_in_apps:
+        if (path / test_path).exists():
+            count = count + 1
+            # If more than one of these subpaths exist we assume this to be an app
+            if count > 1:
+                return True
+    return False
+
+
+def _has_public_api(path: Path) -> bool:
+    for subpath in path.iterdir():
+        if subpath.suffix == ".py":
+            if "__init__" not in str(subpath):
+                # If the component contains any .py file except __init__.py,
+                # it has a public API
+                return True
+    return False
+
+
+def is_component(path: Path) -> bool:
+    if not (path / "__init__.py").exists():
+        # Components should include a __init__.py file
+        return False
+
+    # A component should contain at least one app.
+    for subpath in path.iterdir():
+        if is_app(path=subpath):
+            return True
+    return False

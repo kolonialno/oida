@@ -3,6 +3,8 @@ import os
 import sys
 from pathlib import Path
 
+from oida.statistics.statistics_generator import generate_statistics
+
 from .checkers import get_checkers
 from .commands import componentize_app, generate_config, run_linter
 
@@ -38,6 +40,14 @@ def main() -> None:
         "project_root", type=Path, help="Path to project root directory"
     )
 
+    config_parser = subparsers.add_parser(
+        "statistics",
+        help="Generate statistics about the modularization state",
+    )
+    config_parser.add_argument(
+        "project_root", type=Path, help="Path to project root directory"
+    )
+
     componentize_parser = subparsers.add_parser(
         "componentize",
         help=componentize_app.__doc__,
@@ -55,6 +65,9 @@ def main() -> None:
             sys.exit(1)
     elif args.command == "config":
         generate_config(args.project_root)
+    elif args.command == "statistics":
+        statistics = generate_statistics(args.project_root)
+        print(f"{statistics.json()}")
     elif args.command == "componentize":
         componentize_app(args.old_path, args.new_path)
     else:
