@@ -57,9 +57,6 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Needed to parse Python 3.10 documents
-    os.environ.setdefault("LIBCST_PARSER_TYPE", "native")
-
     if args.command == "lint":
         if not run_linter(*args.paths, checks=args.checks):
             sys.exit(1)
