@@ -128,12 +128,18 @@ def update_allowed_imports_statement(
 
     if node.value and m.matches(node.value, m.Set()):
         value = ensure_type(node.value, cst.Set)
-        current_rules: set[str] = {
+        current_rules = {
             ensure_type(element.value, cst.SimpleString).evaluated_value
             for element in value.elements
         }
 
-        updated_rules = update_allowed_imports(current_rules, violations)
+        # Make sure all items in the set where string literals
+        if not all(isinstance(rule, str) for rule in current_rules):
+            raise ValueError("Found bytes literal in ALLOWED_IMPORTS setting")
+
+        updated_rules = update_allowed_imports(
+            cast(set[str], current_rules), violations
+        )
 
         new_elements = [
             element
