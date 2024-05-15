@@ -57,7 +57,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "lint":
-        if not run_linter(*args.paths, checks=args.checks):
+        has_violations = run_linter(*args.paths, checks=args.checks)
+        if has_violations:
             sys.exit(1)
     elif args.command == "config":
         generate_config(args.project_root)
