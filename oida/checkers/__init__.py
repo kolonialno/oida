@@ -3,6 +3,7 @@ from typing import Sequence
 from .base import Checker, Code, Violation
 from .components import ComponentIsolationChecker
 from .config import ConfigChecker
+from .django_orm import SelectForUpdateChecker
 from .imports import RelativeImportsChecker
 
 __all__ = [
@@ -10,6 +11,7 @@ __all__ = [
     "ComponentIsolationChecker",
     "ConfigChecker",
     "RelativeImportsChecker",
+    "SelectForUpdateChecker",
     "Violation",
 ]
 
@@ -17,6 +19,7 @@ ALL_CHECKERS = (
     ComponentIsolationChecker,
     ConfigChecker,
     RelativeImportsChecker,
+    SelectForUpdateChecker,
 )
 
 
