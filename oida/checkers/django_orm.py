@@ -20,7 +20,10 @@ class SelectForUpdateChecker(Checker):
 
     def visit_Call(self, node: ast.Call) -> None:
         # Check if this is a call to a method named 'select_for_update'
-        if isinstance(node.func, ast.Attribute) and node.func.attr == "select_for_update":
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "select_for_update"
+        ):
             # Check if the 'of' argument is present in the keyword arguments
             has_of_argument = any(keyword.arg == "of" for keyword in node.keywords)
 
