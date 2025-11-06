@@ -15,4 +15,4 @@ runs:
       run: python -m venv .venv
     - name: Install dependencies
       shell: bash
-      run: poetry install --remove-untracked
+      run: poetry install
