@@ -6,11 +6,11 @@ runs:
     - name: Install poetry
       shell: bash
       run: pipx install poetry
-    - name: Set up Python
-      uses: kolonialno/actions/setup-python@setup-python-3.2.2
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v3
       with:
-        package-manager: 'poetry'
-        tool-versions-path: .tool-versions
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'poetry'
     - name: Create venv
       shell: bash
       run: python -m venv .venv
