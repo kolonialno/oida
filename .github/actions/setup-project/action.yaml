@@ -7,10 +7,9 @@ runs:
       shell: bash
       run: pipx install poetry
     - name: Set up Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'poetry'
     - name: Create venv
       shell: bash
       run: python -m venv .venv
