@@ -1,6 +1,7 @@
 import ast
 
-from .base import Checker, Code
+from oida.checkers.base import Checker, Code
+from oida.config import ComponentConfig, ProjectConfig
 
 
 class KeywordOnlyChecker(Checker):
@@ -35,7 +36,13 @@ class KeywordOnlyChecker(Checker):
 
     slug = "service-selector-keyword-only"
 
-    def __init__(self, module, name, component_config, project_config):
+    def __init__(
+        self,
+        module: str | None,
+        name: str,
+        component_config: ComponentConfig | None,
+        project_config: ProjectConfig,
+    ) -> None:
         super().__init__(module, name, component_config, project_config)
         self._is_service_or_selector = self._check_if_service_or_selector()
         self._function_depth = 0  # Track nesting depth of functions
