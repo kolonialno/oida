@@ -406,11 +406,11 @@ def nested_function():
     return inner
 """
 )
-def test_nested_function_violation(
+def test_nested_function_not_checked(
     checker: KeywordOnlyChecker, violations: list[Violation]
 ) -> None:
-    # Only the inner function violates (outer has no params)
-    assert len(violations) == 1
+    # Inner functions are not checked
+    assert not violations
 
 
 @pytest.mark.module(
@@ -421,7 +421,59 @@ class OuterClass:
             pass
 """
 )
-def test_nested_class_method_violation(
+def test_nested_class_method_not_checked(
     checker: KeywordOnlyChecker, violations: list[Violation]
 ) -> None:
+    # Methods of nested classes are not checked
+    assert not violations
+
+
+@pytest.mark.module(
+    """\
+def outer_function(param):
+    def inner(also_positional):
+        pass
+    return inner
+"""
+)
+def test_outer_function_violation_inner_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    # Outer function violates, but inner function is not checked
     assert len(violations) == 1
+    assert violations[0].line == 1
+
+
+@pytest.mark.module(
+    """\
+class TopLevelClass:
+    def method_violation(self, param):
+        def inner_function(positional):
+            pass
+        return inner_function
+"""
+)
+def test_method_violation_with_inner_function_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    # Top-level class method violates, but inner function is not checked
+    assert len(violations) == 1
+    assert violations[0].line == 2
+
+
+@pytest.mark.module(
+    """\
+class TopLevelClass:
+    def method(self, *, param):
+        pass
+
+    class InnerClass:
+        def inner_method(self, positional):
+            pass
+"""
+)
+def test_top_level_method_checked_nested_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    # Top-level class method is valid, nested class method is not checked
+    assert not violations

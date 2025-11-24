@@ -38,6 +38,8 @@ class KeywordOnlyChecker(Checker):
     def __init__(self, module, name, component_config, project_config):
         super().__init__(module, name, component_config, project_config)
         self._is_service_or_selector = self._check_if_service_or_selector()
+        self._function_depth = 0  # Track nesting depth of functions
+        self._class_depth = 0  # Track nesting depth of classes
 
     def _check_if_service_or_selector(self) -> bool:
         """
@@ -65,15 +67,25 @@ class KeywordOnlyChecker(Checker):
         """Check if the function name is a dunder method (e.g., __init__, __str__)."""
         return name.startswith("__") and name.endswith("__")
 
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        """Track class nesting depth."""
+        self._class_depth += 1
+        self.generic_visit(node)
+        self._class_depth -= 1
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Check regular function definitions."""
         self._check_function(node)
+        self._function_depth += 1
         self.generic_visit(node)
+        self._function_depth -= 1
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Check async function definitions."""
         self._check_function(node)
+        self._function_depth += 1
         self.generic_visit(node)
+        self._function_depth -= 1
 
     def _check_function(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
         """
@@ -81,9 +93,20 @@ class KeywordOnlyChecker(Checker):
 
         Functions should use the '*' separator to make all parameters keyword-only,
         except for 'self' or 'cls' in methods.
+
+        Only checks top-level functions and methods of top-level classes.
+        Inner functions and methods of nested classes are not checked.
         """
         # Only check if this is a service or selector file
         if not self._is_service_or_selector:
+            return
+
+        # Skip inner functions (functions defined inside other functions)
+        if self._function_depth > 0:
+            return
+
+        # Skip methods of nested classes (classes defined inside other classes)
+        if self._class_depth > 1:
             return
 
         # Skip dunder methods (e.g., __init__, __str__, __repr__)
