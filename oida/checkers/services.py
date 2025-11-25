@@ -60,8 +60,15 @@ class KeywordOnlyChecker(Checker):
         if self.name in ("services", "selectors"):
             return True
 
+        # Don't require for test files
+        if self.name.startswith("test_"):
+            return False
+
         # Check if file is in services/ or selectors/ directory
         if self.module:
+            # Don't require for test modules
+            if ".tests." in self.module or ".test." in self.module:
+                return False
             # Check if module contains .services. or .selectors., or ends with .services or .selectors
             if ".services." in self.module or ".selectors." in self.module:
                 return True

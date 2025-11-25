@@ -477,3 +477,31 @@ def test_top_level_method_checked_nested_not_checked(
 ) -> None:
     # Top-level class method is valid, nested class method is not checked
     assert not violations
+
+
+@pytest.mark.module(
+    """\
+def test_create_user(username, email):
+    pass
+""",
+    name="test_user_services",
+    module="project.app.tests.services",
+)
+def test_test_files_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.module(
+    """\
+def util(username, email):
+    pass
+""",
+    name="utils",
+    module="project.app.tests.services",
+)
+def test_test_dirs_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert not violations
