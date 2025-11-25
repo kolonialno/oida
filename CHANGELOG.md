@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2025-11-25
 
-## [0.3.0]
-
 ### Added
 - Support for noqa comments for specific lines and rules when running `oida` standalone
 
