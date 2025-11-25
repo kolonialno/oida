@@ -37,8 +37,9 @@ class ComponentIsolationChecker(Checker):
         name: str,
         component_config: ComponentConfig | None,
         project_config: ProjectConfig,
+        source_lines: list[str] | None = None,
     ) -> None:
-        super().__init__(module, name, component_config, project_config)
+        super().__init__(module, name, component_config, project_config, source_lines)
         self.scopes: list[dict[str, str]] = [{}]
         # This checker will collect any imports it sees, regardless of any
         # config. This is used to automatically generate component configs with

@@ -42,8 +42,9 @@ class KeywordOnlyChecker(Checker):
         name: str,
         component_config: ComponentConfig | None,
         project_config: ProjectConfig,
+        source_lines: list[str] | None = None,
     ) -> None:
-        super().__init__(module, name, component_config, project_config)
+        super().__init__(module, name, component_config, project_config, source_lines)
         self._is_service_or_selector = self._check_if_service_or_selector()
         self._function_depth = 0  # Track nesting depth of functions
         self._class_depth = 0  # Track nesting depth of classes

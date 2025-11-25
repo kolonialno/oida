@@ -49,7 +49,9 @@ def collect_violations_in_file(path: Path) -> set[str]:
 
     module = get_module(path)
     project_config = get_project_config(path.parent)
-    checker = ComponentIsolationChecker(module, path.stem, None, project_config)
+    checker = ComponentIsolationChecker(
+        module, path.stem, None, project_config, source_lines=None
+    )
     with open(path) as f:
         checker.visit(ast.parse(f.read(), str(path)))
     return checker.referenced_imports

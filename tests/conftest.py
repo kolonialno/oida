@@ -66,6 +66,7 @@ def checker(request: pytest.FixtureRequest, project_config: ProjectConfig) -> Ch
         name=m.name,
         component_config=config,
         project_config=project_config,
+        source_lines=m.source_lines,
     )
     checker.visit(m.ast)
     return checker
