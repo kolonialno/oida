@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **BREAKING**: Changed inline comment keyword from `# noqa` to `# noida` to avoid conflicts with ruff, which doesn't accept `noqa` comments that don't match ruff rules
+
 ## [0.3.0] - 2025-11-25
 
 ### Added

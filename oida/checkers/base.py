@@ -3,7 +3,7 @@ import enum
 from typing import ClassVar, NamedTuple
 
 from ..config import ComponentConfig, ProjectConfig
-from ..utils import parse_noqa_comment
+from ..utils import parse_noida_comment
 
 
 class Code(int, enum.Enum):
@@ -42,24 +42,24 @@ class Checker(ast.NodeVisitor):
         self.violations: list[Violation] = []
 
     def _should_ignore_violation(self, line: int, code: Code) -> bool:
-        """Check if a violation should be ignored due to a noqa comment."""
+        """Check if a violation should be ignored due to a noida comment."""
         if self.source_lines is None or line < 1 or line > len(self.source_lines):
             return False
 
         source_line = self.source_lines[line - 1]  # Convert 1-indexed to 0-indexed
-        noqa_codes = parse_noqa_comment(source_line)
+        noida_codes = parse_noida_comment(source_line)
 
-        if noqa_codes is None:
-            # No noqa comment
+        if noida_codes is None:
+            # No noida comment
             return False
 
-        if not noqa_codes:
-            # "# noqa" without specific codes - ignore all violations
+        if not noida_codes:
+            # "# noida" without specific codes - ignore all violations
             return True
 
         # Check if this specific code should be ignored
         code_str = f"ODA{code.value:03d}"
-        return code_str in noqa_codes
+        return code_str in noida_codes
 
     def report_violation(self, node: ast.AST, code: Code, message: str) -> None:
         if self._should_ignore_violation(node.lineno, code):
