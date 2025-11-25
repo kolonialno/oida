@@ -57,7 +57,7 @@ def parse_noqa_comment(line: str) -> set[str] | None:
     """
     # Match "# noqa" optionally followed by ": CODE1, CODE2, ..."
     # Case-insensitive matching for "noqa"
-    match = re.search(r'#\s*noqa(?::\s*([A-Z0-9,\s]+))?', line, re.IGNORECASE)
+    match = re.search(r"#\s*noqa(?::\s*([A-Z0-9,\s]+))?", line, re.IGNORECASE)
 
     if not match:
         return None
@@ -68,5 +68,5 @@ def parse_noqa_comment(line: str) -> set[str] | None:
         return set()
 
     # Parse the comma-separated list of codes
-    codes = {code.strip() for code in codes_str.split(',') if code.strip()}
+    codes = {code.strip() for code in codes_str.split(",") if code.strip()}
     return codes

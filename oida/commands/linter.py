@@ -32,7 +32,7 @@ def run_linter(*paths: Path, checks: list[str]) -> bool:
                 print_violation(module.path, *violation)
         # Clear ast and source_lines from memory as we no longer need them
         del module.ast
-        if hasattr(module, '_source_lines'):
-            del module._source_lines
+        if hasattr(module, "_source_lines"):
+            del module._source_lines  # type: ignore
 
     return has_violations
