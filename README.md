@@ -41,7 +41,8 @@ an existing codebase into one that's modularized. For details see `oida
 ### `oida lint`
 
 This command is just another way of running the same checks that can be run
-through `flake8`. Note that this does not support `# noqa` comments.
+through `flake8`. This command supports `# noqa` comments to ignore specific
+violations on individual lines (see below for details).
 
 ### `oida config`
 
@@ -98,6 +99,25 @@ ALLOWED_IMPORTS = ["my_component.app.models.MyModel"]
 
 This will silence any warnings when importing `my_component.app.models.MyModel`
 in the current app/component.
+
+
+## Ignoring Violations with `# noqa` Comments
+
+You can use inline `# noqa` comments to ignore specific violations on individual lines:
+
+```python
+# Ignore all violations on this line
+from project.other_component.app.models import Model  # noqa
+
+# Ignore a specific violation code
+from project.other_component.app.models import Model  # noqa: ODA005
+
+# Ignore multiple specific violation codes
+from project.other_component.app.models import Model  # noqa: ODA005, ODA001
+```
+
+The `# noqa` comments work with both the `oida lint` command and when used as a
+flake8 plugin.
 
 
 ## Checks
