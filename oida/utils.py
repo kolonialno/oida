@@ -36,35 +36,35 @@ def path_in_glob_list(path: str, glob_list: list[str]) -> bool:
     return False
 
 
-def parse_noqa_comment(line: str) -> set[str] | None:
+def parse_noida_comment(line: str) -> set[str] | None:
     """
-    Parse a noqa comment from a line of source code.
+    Parse a noida comment from a line of source code.
 
     Returns:
-        - None if no noqa comment is found
-        - Empty set if "# noqa" (ignore all violations)
-        - Set of specific codes if "# noqa: ODA001,ODA002" (ignore specific codes)
+        - None if no noida comment is found
+        - Empty set if "# noida" (ignore all violations)
+        - Set of specific codes if "# noida: ODA001,ODA002" (ignore specific codes)
 
     Examples:
-        >>> parse_noqa_comment("x = 1  # noqa")
+        >>> parse_noida_comment("x = 1  # noida")
         set()
-        >>> parse_noqa_comment("x = 1  # noqa: ODA005")
+        >>> parse_noida_comment("x = 1  # noida: ODA005")
         {'ODA005'}
-        >>> parse_noqa_comment("x = 1  # noqa: ODA005, ODA001")
+        >>> parse_noida_comment("x = 1  # noida: ODA005, ODA001")
         {'ODA005', 'ODA001'}
-        >>> parse_noqa_comment("x = 1  # regular comment")
+        >>> parse_noida_comment("x = 1  # regular comment")
         None
     """
-    # Match "# noqa" optionally followed by ": CODE1, CODE2, ..."
-    # Case-insensitive matching for "noqa"
-    match = re.search(r"#\s*noqa(?::\s*([A-Z0-9,\s]+))?", line, re.IGNORECASE)
+    # Match "# noida" optionally followed by ": CODE1, CODE2, ..."
+    # Case-insensitive matching for "noida"
+    match = re.search(r"#\s*noida(?::\s*([A-Z0-9,\s]+))?", line, re.IGNORECASE)
 
     if not match:
         return None
 
     codes_str = match.group(1)
     if not codes_str:
-        # "# noqa" without specific codes - ignore all
+        # "# noida" without specific codes - ignore all
         return set()
 
     # Parse the comma-separated list of codes

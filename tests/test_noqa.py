@@ -1,36 +1,36 @@
 import pytest
 
 from oida.checkers import Code, ComponentIsolationChecker, Violation
-from oida.utils import parse_noqa_comment
+from oida.utils import parse_noida_comment
 
 pytestmark = pytest.mark.module(name="selectors", module="project.component.app")
 
 
-def test_parse_noqa_comment_no_comment() -> None:
-    """Test parsing line without noqa comment"""
-    assert parse_noqa_comment("x = 1") is None
-    assert parse_noqa_comment("from foo import bar") is None
+def test_parse_noida_comment_no_comment() -> None:
+    """Test parsing line without noida comment"""
+    assert parse_noida_comment("x = 1") is None
+    assert parse_noida_comment("from foo import bar") is None
 
 
-def test_parse_noqa_comment_generic() -> None:
-    """Test parsing generic noqa comment"""
-    assert parse_noqa_comment("x = 1  # noqa") == set()
-    assert parse_noqa_comment("x = 1  #noqa") == set()
-    assert parse_noqa_comment("x = 1  # NOQA") == set()
+def test_parse_noida_comment_generic() -> None:
+    """Test parsing generic noida comment"""
+    assert parse_noida_comment("x = 1  # noida") == set()
+    assert parse_noida_comment("x = 1  #noida") == set()
+    assert parse_noida_comment("x = 1  # NOIDA") == set()
 
 
-def test_parse_noqa_comment_specific_code() -> None:
-    """Test parsing noqa comment with specific code"""
-    assert parse_noqa_comment("x = 1  # noqa: ODA005") == {"ODA005"}
-    assert parse_noqa_comment("x = 1  # noqa:ODA005") == {"ODA005"}
-    assert parse_noqa_comment("x = 1  # NOQA: ODA005") == {"ODA005"}
+def test_parse_noida_comment_specific_code() -> None:
+    """Test parsing noida comment with specific code"""
+    assert parse_noida_comment("x = 1  # noida: ODA005") == {"ODA005"}
+    assert parse_noida_comment("x = 1  # noida:ODA005") == {"ODA005"}
+    assert parse_noida_comment("x = 1  # NOIDA: ODA005") == {"ODA005"}
 
 
-def test_parse_noqa_comment_multiple_codes() -> None:
-    """Test parsing noqa comment with multiple codes"""
-    assert parse_noqa_comment("x = 1  # noqa: ODA005, ODA001") == {"ODA005", "ODA001"}
-    assert parse_noqa_comment("x = 1  # noqa: ODA005,ODA001") == {"ODA005", "ODA001"}
-    assert parse_noqa_comment("x = 1  # noqa: ODA005 , ODA001") == {
+def test_parse_noida_comment_multiple_codes() -> None:
+    """Test parsing noida comment with multiple codes"""
+    assert parse_noida_comment("x = 1  # noida: ODA005, ODA001") == {"ODA005", "ODA001"}
+    assert parse_noida_comment("x = 1  # noida: ODA005,ODA001") == {"ODA005", "ODA001"}
+    assert parse_noida_comment("x = 1  # noida: ODA005 , ODA001") == {
         "ODA005",
         "ODA001",
     }
@@ -39,13 +39,13 @@ def test_parse_noqa_comment_multiple_codes() -> None:
 @pytest.mark.module(
     """\
     from project.other.app.services import service
-    service()  # noqa
+    service()  # noida
     """
 )
-def test_noqa_generic_ignores_violation(
+def test_noida_generic_ignores_violation(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
-    """Test that generic noqa comment ignores all violations on that line"""
+    """Test that generic noida comment ignores all violations on that line"""
     assert violations == []
     assert checker.referenced_imports == {"project.other.app.services.service"}
 
@@ -53,13 +53,13 @@ def test_noqa_generic_ignores_violation(
 @pytest.mark.module(
     """\
     from project.other.app.services import service
-    service()  # noqa: ODA005
+    service()  # noida: ODA005
     """
 )
-def test_noqa_specific_code_ignores_violation(
+def test_noida_specific_code_ignores_violation(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
-    """Test that specific noqa comment ignores matching violation"""
+    """Test that specific noida comment ignores matching violation"""
     assert violations == []
     assert checker.referenced_imports == {"project.other.app.services.service"}
 
@@ -67,13 +67,13 @@ def test_noqa_specific_code_ignores_violation(
 @pytest.mark.module(
     """\
     from project.other.app.services import service
-    service()  # noqa: ODA001
+    service()  # noida: ODA001
     """
 )
-def test_noqa_different_code_does_not_ignore(
+def test_noida_different_code_does_not_ignore(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
-    """Test that noqa comment with different code does not ignore violation"""
+    """Test that noida comment with different code does not ignore violation"""
     assert violations == [
         Violation(
             line=2,
@@ -88,13 +88,13 @@ def test_noqa_different_code_does_not_ignore(
 @pytest.mark.module(
     """\
     from project.other.app.services import service
-    service()  # noqa: ODA005, ODA001
+    service()  # noida: ODA005, ODA001
     """
 )
-def test_noqa_multiple_codes_ignores_matching(
+def test_noida_multiple_codes_ignores_matching(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
-    """Test that noqa comment with multiple codes ignores matching violation"""
+    """Test that noida comment with multiple codes ignores matching violation"""
     assert violations == []
     assert checker.referenced_imports == {"project.other.app.services.service"}
 
@@ -104,13 +104,13 @@ def test_noqa_multiple_codes_ignores_matching(
     from project.other.app.models import Model
 
     def selector() -> None:
-        Model.objects.get()  # noqa: ODA005
+        Model.objects.get()  # noida: ODA005
     """
 )
-def test_noqa_in_function_body(
+def test_noida_in_function_body(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
-    """Test that noqa comment works in function bodies"""
+    """Test that noida comment works in function bodies"""
     assert violations == []
     assert checker.referenced_imports == {"project.other.app.models.Model"}
 
@@ -121,13 +121,13 @@ def test_noqa_in_function_body(
 
     def selector() -> None:
         Model.objects.get()
-        Model.objects.filter()  # noqa
+        Model.objects.filter()  # noida
     """
 )
-def test_noqa_only_affects_its_line(
+def test_noida_only_affects_its_line(
     checker: ComponentIsolationChecker, violations: list[Violation]
 ) -> None:
-    """Test that noqa comment only affects violations on its own line"""
+    """Test that noida comment only affects violations on its own line"""
     assert violations == [
         Violation(
             line=4,
