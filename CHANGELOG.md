@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-25
+
 ## [0.3.0]
 
 ### Added
@@ -86,6 +88,7 @@ Added new linter `django-select-for-update`
 - Initial release
 
 [Unreleased]: https://github.com/kolonialno/oida/compare/v0.2.3...HEAD
+[0.3.0]: https://github.com/kolonialno/oida/compare/v0.2.3...v0.2.3
 [0.2.3]: https://github.com/kolonialno/oida/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/kolonialno/oida/compare/v0.2.0...v0.2.2
 [0.2.0]: https://github.com/kolonialno/oida/compare/v0.1.5...v0.2.0
