@@ -12,6 +12,7 @@ class Code(int, enum.Enum):
     ODA004 = 4  # Invalid ALLOWED_FOREIGN_KEYS statement in config
     ODA005 = 5  # Private attribute referenced
     ODA006 = 6  # select_for_update called without 'of' argument
+    ODA007 = 7  # Service/selector function without keyword-only parameters
 
 
 class Violation(NamedTuple):

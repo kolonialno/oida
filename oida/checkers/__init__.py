@@ -5,11 +5,13 @@ from .components import ComponentIsolationChecker
 from .config import ConfigChecker
 from .django_orm import SelectForUpdateChecker
 from .imports import RelativeImportsChecker
+from .services import KeywordOnlyChecker
 
 __all__ = [
     "Code",
     "ComponentIsolationChecker",
     "ConfigChecker",
+    "KeywordOnlyChecker",
     "RelativeImportsChecker",
     "SelectForUpdateChecker",
     "Violation",
@@ -18,6 +20,7 @@ __all__ = [
 ALL_CHECKERS = (
     ComponentIsolationChecker,
     ConfigChecker,
+    KeywordOnlyChecker,
     RelativeImportsChecker,
     SelectForUpdateChecker,
 )

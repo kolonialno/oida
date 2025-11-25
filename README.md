@@ -107,5 +107,9 @@ These are the checks currently implemented in Oida:
  * **component-isolation:** Checks that relative imports do not cross app boundaries.
  * **config:** Checks that component configuration files are valid
  * **relative-imports:** Checks that no imports are done across components.
- * **django-select-for-update:** Checks that all `.select_for_update()` usage sets the 
+ * **django-select-for-update:** Checks that all `.select_for_update()` usage sets the
 `of` argument, to prevent unintended locking of tables
+ * **service-selector-keyword-only:** Checks that all functions in service and selector
+modules use keyword-only parameters (with the `*` separator). This applies to files
+named `services.py` or `selectors.py`, or files within `services/` or `selectors/`
+directories. Inner functions and methods of nested classes are excluded from this check.
