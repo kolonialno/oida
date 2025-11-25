@@ -17,3 +17,10 @@ class Module:
         if self.content is not None:
             return ast.parse(self.content, filename=str(self.path))
         return ast.parse(self.path.read_bytes(), filename=str(self.path))
+
+    @cached_property
+    def source_lines(self) -> list[str]:
+        """Get the source code lines for this module."""
+        if self.content is not None:
+            return self.content.splitlines()
+        return self.path.read_text().splitlines()
