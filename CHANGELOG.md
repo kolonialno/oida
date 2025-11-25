@@ -7,15 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
+### Added
+- Support for noqa comments for specific lines and rules when running `oida` standalone
+
+### Fixed
+- Ignoring test files and directories in the keywords-only checker
+
 ## [0.2.3] - 2025-11-25
 
-### New
+### Added
 
 Added new linter `service-selector-keyword-only` 
 
 ## [0.2.2] - 2025-11-06
 
-### New
+### Added
 
 Added new linter `django-select-for-update` 
 

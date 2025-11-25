@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "oida"
-version = "0.2.3"
+version = "0.3.0"
 description = "Oida is Oda's linter that enforces code style and modularization in our Django projects."
 authors = ["Oda <tech@oda.com>"]
 license = "MIT"
