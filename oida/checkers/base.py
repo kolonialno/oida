@@ -31,11 +31,13 @@ class Checker(ast.NodeVisitor):
         name: str,
         component_config: ComponentConfig | None,
         project_config: ProjectConfig,
+        source_lines: list[str] | None = None,
     ) -> None:
         self.module = module
         self.name = name
         self.component_config = component_config
         self.project_config = project_config
+        self.source_lines = source_lines
         self.violations: list[Violation] = []
 
     def report_violation(self, node: ast.AST, code: Code, message: str) -> None:
