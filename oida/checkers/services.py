@@ -127,6 +127,9 @@ class KeywordOnlyChecker(Checker):
         # Skip dunder methods (e.g., __init__, __str__, __repr__)
         if self._is_dunder_method(node.name):
             return
+        # Skip private/protected functions (leading underscore)
+        if node.name.startswith("_"):
+            return
 
         args = node.args
 

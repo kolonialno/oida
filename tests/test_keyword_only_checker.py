@@ -272,6 +272,31 @@ def test_dunder_methods_not_checked(
     assert not violations
 
 
+@pytest.mark.module(
+    """\
+def _private(username, email):
+    pass
+"""
+)
+def test_private_function_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.module(
+    """\
+class UserService:
+    def _private_method(self, username, email):
+        pass
+"""
+)
+def test_private_method_not_checked(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
 # Tests for file/directory detection
 
 
