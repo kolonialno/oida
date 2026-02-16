@@ -505,3 +505,112 @@ def test_test_dirs_not_checked(
     checker: KeywordOnlyChecker, violations: list[Violation]
 ) -> None:
     assert not violations
+
+
+# Tests for keyword_only_ignore_private configuration
+
+
+@pytest.mark.module(
+    """\
+def _private_function(username, email):
+    pass
+"""
+)
+def test_private_function_checked_by_default(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            code=Code.ODA007,
+            message="Service and selector functions must use keyword-only parameters (add * before parameters)",
+        )
+    ]
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    keyword_only_ignore_private = true
+    """
+)
+@pytest.mark.module(
+    """\
+def _private_function(username, email):
+    pass
+"""
+)
+def test_private_function_ignored_when_configured(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    keyword_only_ignore_private = true
+    """
+)
+@pytest.mark.module(
+    """\
+def public_function(username, email):
+    pass
+"""
+)
+def test_public_function_still_checked_when_private_ignored(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            code=Code.ODA007,
+            message="Service and selector functions must use keyword-only parameters (add * before parameters)",
+        )
+    ]
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    keyword_only_ignore_private = true
+    """
+)
+@pytest.mark.module(
+    """\
+class UserService:
+    def _private_method(self, username, email):
+        pass
+"""
+)
+def test_private_method_ignored_when_configured(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert not violations
+
+
+@pytest.mark.pyproject_toml(
+    """\
+    [tool.oida]
+    keyword_only_ignore_private = false
+    """
+)
+@pytest.mark.module(
+    """\
+def _private_function(username, email):
+    pass
+"""
+)
+def test_private_function_checked_when_config_false(
+    checker: KeywordOnlyChecker, violations: list[Violation]
+) -> None:
+    assert violations == [
+        Violation(
+            line=1,
+            column=0,
+            code=Code.ODA007,
+            message="Service and selector functions must use keyword-only parameters (add * before parameters)",
+        )
+    ]
