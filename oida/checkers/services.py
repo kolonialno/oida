@@ -128,7 +128,8 @@ class KeywordOnlyChecker(Checker):
         if self._is_dunder_method(node.name):
             return
 
-        # Optionally skip private functions (prefixed with _ but not dunder)
+        # Optionally skip private functions (prefixed with _, dunder methods handled
+        # above)
         if self.project_config.keyword_only_ignore_private and node.name.startswith(
             "_"
         ):
