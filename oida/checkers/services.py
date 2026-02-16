@@ -129,9 +129,8 @@ class KeywordOnlyChecker(Checker):
             return
 
         # Optionally skip private functions (prefixed with _ but not dunder)
-        if (
-            self.project_config.keyword_only_ignore_private
-            and node.name.startswith("_")
+        if self.project_config.keyword_only_ignore_private and node.name.startswith(
+            "_"
         ):
             return
 
