@@ -7,7 +7,7 @@ from ..discovery import find_modules, get_component_config, get_project_config
 def print_violation(
     file: Path, line: int, column: int, code: Code, message: str
 ) -> None:
-    print(f"{file}:{line}:{column}: {message}")
+    print(f"{file}:{line}:{column}: ODA{code.value:03d} {message}")
 
 
 def run_linter(*paths: Path, checks: list[str]) -> bool:
