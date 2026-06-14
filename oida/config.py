@@ -16,6 +16,7 @@ else:
 class ProjectConfig:
     ignored_modules: list[str] = field(default_factory=list)
     allowed_imports: list[str] = field(default_factory=list)
+    keyword_only_ignore_private: bool = False
 
     @classmethod
     def from_pyproject_toml(cls, pyproject_toml: str) -> ProjectConfig:

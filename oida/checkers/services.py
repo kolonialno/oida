@@ -128,6 +128,13 @@ class KeywordOnlyChecker(Checker):
         if self._is_dunder_method(node.name):
             return
 
+        # Optionally skip private functions (prefixed with _, dunder methods handled
+        # above)
+        if self.project_config.keyword_only_ignore_private and node.name.startswith(
+            "_"
+        ):
+            return
+
         args = node.args
 
         # Determine if this is an instance/class method by checking the first parameter

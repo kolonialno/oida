@@ -134,3 +134,14 @@ These are the checks currently implemented in Oida:
 modules use keyword-only parameters (with the `*` separator). This applies to files
 named `services.py` or `selectors.py`, or files within `services/` or `selectors/`
 directories. Inner functions and methods of nested classes are excluded from this check.
+
+## Configuration
+
+Oida can be configured through `pyproject.toml` under the `[tool.oida]` section:
+
+```toml
+[tool.oida]
+keyword_only_ignore_private = true
+```
+
+ * **keyword_only_ignore_private:** When set to `true`, private functions (prefixed with `_`) are excluded from the keyword-only parameter check (ODA007). Defaults to `false`.
