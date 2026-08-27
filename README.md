@@ -134,3 +134,38 @@ These are the checks currently implemented in Oida:
 modules use keyword-only parameters (with the `*` separator). This applies to files
 named `services.py` or `selectors.py`, or files within `services/` or `selectors/`
 directories. Inner functions and methods of nested classes are excluded from this check.
+ * **record-build-no-queries:** Checks that the `build` methods of records, the request
+and response types of a web API, do not query the database. Fetching data belongs
+outside the record, so a `build` method may only massage what it is given. See
+[Records](#records) below for how records are found and how to configure it.
+
+
+## Records
+
+The `record-build-no-queries` check needs to know which classes are records. It finds
+them in two ways, and a class matching either one is checked:
+
+ * **By module.** `record_modules` lists module names. It defaults to `["records"]`,
+which matches files named `records.py` as well as any module under a `records/`
+directory. Test files and modules are always skipped.
+ * **By base class.** `record_base_classes` lists base class names, and is empty by
+default. Names are matched directly, and followed through bases defined in the same
+file, so a class inheriting a local base that inherits a listed name also counts.
+Generic bases such as `AuditRecord[list[str]]` are unwrapped.
+
+`record_build_methods` sets which methods to check. It defaults to `["build",
+"build_*"]` and accepts glob patterns.
+
+Note that base classes are matched by name only. Oida reads one file at a time, so it
+cannot follow an import to prove a class descends from `pydantic.BaseModel`. Classes
+inheriting `Enum`, `StrEnum`, `IntEnum`, `IntFlag`, `Flag`, `NamedTuple`, `TypedDict`
+or `Protocol` are never treated as records.
+
+All three settings go in `pyproject.toml`:
+
+```toml
+[tool.oida]
+record_modules = ["records"]
+record_base_classes = ["Body", "CamelModel"]
+record_build_methods = ["build", "build_*"]
+```
