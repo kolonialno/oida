@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New `record-build-no-queries` check, which reports Django database queries in the
+  `build` methods of records. Configured with the `record_modules`,
+  `record_base_classes` and `record_build_methods` settings.
+
 ## [0.3.2] - 2026-06-03
 
 ### Changed

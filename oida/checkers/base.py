@@ -14,6 +14,7 @@ class Code(int, enum.Enum):
     ODA005 = 5  # Private attribute referenced
     ODA006 = 6  # select_for_update called without 'of' argument
     ODA007 = 7  # Service/selector function without keyword-only parameters
+    ODA008 = 8  # Django DB query in a record build method
 
 
 class Violation(NamedTuple):

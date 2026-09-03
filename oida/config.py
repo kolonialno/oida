@@ -16,6 +16,11 @@ else:
 class ProjectConfig:
     ignored_modules: list[str] = field(default_factory=list)
     allowed_imports: list[str] = field(default_factory=list)
+    record_modules: list[str] = field(default_factory=lambda: ["records"])
+    record_base_classes: list[str] = field(default_factory=list)
+    record_build_methods: list[str] = field(
+        default_factory=lambda: ["build", "build_*"]
+    )
 
     @classmethod
     def from_pyproject_toml(cls, pyproject_toml: str) -> ProjectConfig:
